@@ -1,6 +1,24 @@
-# Baby Tracker Application
+# 👶 Baby Tracker Application
 
 A comprehensive baby tracking application built with HTML, CSS, JavaScript, and Node.js. This app helps parents monitor their baby's daily activities including growth, feeding, diaper changes, and sleep patterns.
+
+## 🌐 Live Demo
+
+**🚀 Production URL**: [https://my-baby-production.up.railway.app](https://my-baby-production.up.railway.app)
+
+**📦 Alternative Deployments**:
+- Railway: Auto-deploys from GitHub main branch
+- Render: Available via render.yaml configuration
+- GitHub Actions: Automated testing and deployment
+
+## 🎯 Multi-User System
+
+The application now supports **5 different users**:
+- 👤 **Kiang** (Default user)
+- 👤 **Aoey** (Second user)  
+- 👤 **User 3, 4, 5** (Additional slots)
+
+Each user has completely separate data and can track their own baby independently!
 
 ## Features
 
@@ -13,12 +31,15 @@ A comprehensive baby tracking application built with HTML, CSS, JavaScript, and 
 - **Mobile-First Design**: Responsive design optimized for mobile devices
 - **Modern UI**: Beautiful gradient backgrounds and smooth animations
 
-## Technology Stack
+## 💻 Technology Stack
 
 - **Frontend**: HTML5, Tailwind CSS, JavaScript (ES6+)
 - **Backend**: Node.js with Express.js
-- **Data Storage**: JSON files (file-based storage)
-- **Styling**: Tailwind CSS with custom gradients and responsive design
+- **Database**: SQLite3 with multi-user support
+- **Styling**: Tailwind CSS with glassmorphism design
+- **Icons**: Font Awesome icons
+- **Charts**: Chart.js for growth visualization
+- **Deployment**: Railway, Render, GitHub Actions
 
 ## Installation
 
@@ -29,20 +50,22 @@ A comprehensive baby tracking application built with HTML, CSS, JavaScript, and 
    npm install
    ```
 
-3. **Start the server**:
+3. **Start the database server**:
    ```bash
-   npm start
+   node server-db.js
    ```
 
-   Or for development with auto-restart:
+   Or use npm start (configured for database server):
    ```bash
-   npm run dev
+   npm start
    ```
 
 4. **Open your browser** and visit:
    ```
    http://localhost:3000
    ```
+
+5. **Select User**: Choose from 5 available users (Kiang, Aoey, User 3-5) in the dropdown
 
 ## Usage
 
@@ -76,14 +99,23 @@ A comprehensive baby tracking application built with HTML, CSS, JavaScript, and 
 - Handles overnight sleep sessions
 - Shows sleep patterns and averages
 
-## Data Storage
+## 🗄️ Data Storage
 
-The application stores data in JSON files in the `data/` directory:
-- `baby.json` - Baby profile information
-- `growth.json` - Growth measurements
-- `feeding.json` - Feeding records
-- `diaper.json` - Diaper change logs
-- `sleep.json` - Sleep session data
+The application uses **SQLite database** (`baby_tracker.db`) with multi-user support:
+
+### Database Schema:
+- **`users`** - User profiles (5 users: Kiang, Aoey, User 3-5)
+- **`baby_profiles`** - Baby information per user
+- **`growth_entries`** - Weight/height measurements per user
+- **`feeding_entries`** - Feeding records per user
+- **`diaper_entries`** - Diaper change logs per user
+- **`sleep_entries`** - Sleep session data per user
+
+### Data Persistence:
+- ✅ **Cross-device synchronization** - Data saved to server database
+- ✅ **User separation** - Each user has completely separate data
+- ✅ **Photo storage** - Base64 encoded images stored in database
+- ✅ **Session persistence** - User selection remembered locally
 
 ## API Endpoints
 
