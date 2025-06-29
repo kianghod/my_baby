@@ -303,7 +303,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Baby Tracker server is running on port ${PORT}`);
-    console.log(`Visit http://localhost:${PORT} to use the app`);
-}); 
+// Export the app for serverless environments
+module.exports = app;
+
+// Only start server if not in serverless environment
+if (require.main === module) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Baby Tracker server is running on port ${PORT}`);
+        console.log(`Visit http://localhost:${PORT} to use the app`);
+    });
+} 
