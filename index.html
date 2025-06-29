@@ -57,14 +57,14 @@
                     <p id="babyDate" class="text-sm font-medium text-gray-700">23 Sep 2023</p>
                     <p id="babyAge" class="text-sm text-gray-600">(2m 3d)</p>
                 </div>
-                <button class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-all duration-300 hover:scale-110 flex items-center justify-center border border-gray-200" onclick="editBabyProfile()">
+                <button class="w-8 h-8 bg-white border-2 border-gray-300 hover:border-gray-400 rounded-full text-sm transition-all duration-300 hover:scale-110 flex items-center justify-center" onclick="editBabyProfile()">
                     <i class="fas fa-edit text-gray-700"></i>
                 </button>
             </div>
         </header>
 
         <!-- Enhanced Statistics Dashboard -->
-        <div class="px-6 pb-6 pt-4 bg-gray-50 border-b border-gray-200">
+        <div class="px-6 pb-6 pt-4 bg-gray-50">
             <div class="text-center mb-4">
                 <h3 class="text-base font-semibold text-gray-800 mb-1">Daily Summary</h3>
                 <p class="text-xs text-gray-600">Today's key metrics at a glance</p>
@@ -133,11 +133,11 @@
                         <h2 class="text-lg font-bold text-gray-800">Growth</h2>
                         <p id="growthSubtitle" class="text-sm text-gray-600">4.4 kg</p>
                     </div>
-                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-xl text-sm mr-3 transition-all border border-gray-200" onclick="openGrowthChart()">
+                    <button class="bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-2 py-1 rounded-xl text-sm mr-3 transition-all" onclick="openGrowthChart()">
                         <i class="fas fa-chart-line mr-1"></i>Chart
                     </button>
-                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-green-300 border border-gray-200" onclick="addGrowthEntry()">+Add</button>
-                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('growth')">
+                    <button class="bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all" onclick="addGrowthEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm transition-all" onclick="toggleSection('growth')">
                         <i class="fas fa-chevron-down" id="growthChevron"></i>
                     </button>
                 </div>
@@ -161,8 +161,8 @@
                         <h2 class="text-lg font-bold text-gray-800">Milk</h2>
                         <p id="milkSubtitle" class="text-sm text-gray-600">Already drink for 1 day</p>
                     </div>
-                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-blue-300 border border-gray-200" onclick="addFeedingEntry()">+Add</button>
-                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('milk')">
+                    <button class="bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all" onclick="addFeedingEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm transition-all" onclick="toggleSection('milk')">
                         <i class="fas fa-chevron-down" id="milkChevron"></i>
                     </button>
                 </div>
@@ -188,8 +188,8 @@
                         <h2 class="text-lg font-bold text-gray-800">Feeding</h2>
                         <p id="feedingSubtitle" class="text-sm text-gray-600">Every 2 hours - Next 23:00</p>
                     </div>
-                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-orange-300 border border-gray-200" onclick="addFeedingEntry()">+Add</button>
-                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('feeding')">
+                    <button class="bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all" onclick="addFeedingEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm transition-all" onclick="toggleSection('feeding')">
                         <i class="fas fa-chevron-down" id="feedingChevron"></i>
                     </button>
                 </div>
@@ -212,8 +212,8 @@
                         <h2 class="text-lg font-bold text-gray-800">Pee/Poo</h2>
                         <p id="diaperSubtitle" class="text-sm text-gray-600 section-subtitle">Average 6 pee 2 poo 1 day</p>
                     </div>
-                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-pink-300 border border-gray-200" onclick="addDiaperEntry()">+Add</button>
-                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('diaper')">
+                    <button class="bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all" onclick="addDiaperEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm transition-all" onclick="toggleSection('diaper')">
                         <i class="fas fa-chevron-down" id="diaperChevron"></i>
                     </button>
                 </div>
@@ -237,8 +237,8 @@
                         <h2 class="text-lg font-bold text-gray-800">Sleep</h2>
                         <p id="sleepSubtitle" class="text-sm text-gray-600 section-subtitle">Avg 8.5 hour sleep / day</p>
                     </div>
-                    <button id="sleepToggleBtn" class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 border border-gray-200" onclick="toggleSleep()">Start Sleep</button>
-                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('sleep')">
+                    <button id="sleepToggleBtn" class="bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all" onclick="toggleSleep()">Start Sleep</button>
+                    <button class="w-8 h-8 ml-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm transition-all" onclick="toggleSection('sleep')">
                         <i class="fas fa-chevron-down" id="sleepChevron"></i>
                     </button>
                 </div>
@@ -263,8 +263,8 @@
                 <input type="number" id="growthWeight" placeholder="Weight (kg)" step="0.1" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
                 <input type="number" id="growthHeight" placeholder="Height (cm)" step="0.1" class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
                 <div class="flex gap-3 mt-3">
-                    <button type="button" onclick="closeModal('growthModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
-                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-green-300 border border-gray-200">Save</button>
+                    <button type="button" onclick="closeModal('growthModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Save</button>
                 </div>
             </form>
         </div>
@@ -282,8 +282,8 @@
                     <option value="breast">Breast</option>
                 </select>
                 <div class="flex gap-3 mt-3">
-                    <button type="button" onclick="closeModal('feedingModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
-                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-blue-300 border border-gray-200">Save</button>
+                    <button type="button" onclick="closeModal('feedingModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Save</button>
                 </div>
             </form>
         </div>
@@ -301,8 +301,8 @@
                     <option value="both">Both</option>
                 </select>
                 <div class="flex gap-3 mt-3">
-                    <button type="button" onclick="closeModal('diaperModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
-                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-pink-300 border border-gray-200">Save</button>
+                    <button type="button" onclick="closeModal('diaperModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Save</button>
                 </div>
             </form>
         </div>
@@ -316,8 +316,8 @@
                 <input type="time" id="sleepStart" placeholder="Start Time" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
                 <input type="time" id="sleepEnd" placeholder="End Time" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
                 <div class="flex gap-3 mt-3">
-                    <button type="button" onclick="closeModal('sleepModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
-                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-purple-300 border border-gray-200">Save</button>
+                    <button type="button" onclick="closeModal('sleepModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Save</button>
                 </div>
             </form>
         </div>
@@ -330,8 +330,8 @@
                 <input type="text" id="profileName" placeholder="Baby's Name" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
                 <input type="date" id="profileBirthDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
                 <div class="flex gap-3 mt-3">
-                    <button type="button" onclick="closeModal('babyProfileModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
-                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-pink-300 border border-gray-200">Save</button>
+                    <button type="button" onclick="closeModal('babyProfileModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700">Save</button>
                 </div>
             </form>
         </div>
@@ -342,20 +342,20 @@
         <div class="bg-white mx-auto mt-8 p-6 rounded-xl w-11/12 max-w-2xl max-h-screen overflow-y-auto shadow-lg">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">Growth Chart</h2>
-                <button onclick="closeModal('growthChartModal')" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full flex items-center justify-center transition-all">
+                <button onclick="closeModal('growthChartModal')" class="w-8 h-8 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-full flex items-center justify-center transition-all">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <!-- Chart Type Buttons -->
             <div class="flex gap-3 mb-6 justify-center">
-                <button id="weightChartBtn" onclick="showWeightChart()" class="px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium transition-all hover:bg-blue-600">
+                <button id="weightChartBtn" onclick="showWeightChart()" class="px-4 py-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm font-medium transition-all">
                     <i class="fas fa-weight-hanging mr-2"></i>Weight
                 </button>
-                <button id="heightChartBtn" onclick="showHeightChart()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all hover:bg-gray-300">
+                <button id="heightChartBtn" onclick="showHeightChart()" class="px-4 py-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm font-medium transition-all">
                     <i class="fas fa-ruler-vertical mr-2"></i>Height  
                 </button>
-                <button id="bothChartBtn" onclick="showBothCharts()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all hover:bg-gray-300">
+                <button id="bothChartBtn" onclick="showBothCharts()" class="px-4 py-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm font-medium transition-all">
                     <i class="fas fa-chart-line mr-2"></i>Both
                 </button>
             </div>

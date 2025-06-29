@@ -226,7 +226,7 @@ function updateBabyProfile() {
     
     if (ageElement && babyData.birth_date) {
         const age = calculateAge(babyData.birth_date);
-        ageElement.textContent = `${age.months} months ${age.days} days`;
+        ageElement.textContent = `(${age.formatted})`;
     }
     
     if (photoElement && babyData.photo) {
@@ -237,11 +237,37 @@ function updateBabyProfile() {
 function calculateAge(birthDate) {
     const birth = new Date(birthDate);
     const today = new Date();
-    const diffTime = Math.abs(today - birth);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const months = Math.floor(diffDays / 30);
-    const days = diffDays % 30;
-    return { months, days };
+    
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+    let days = today.getDate() - birth.getDate();
+    
+    // Adjust for negative days
+    if (days < 0) {
+        months--;
+        const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        days += lastMonth.getDate();
+    }
+    
+    // Adjust for negative months
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+    
+    // Format the age string
+    let ageString = '';
+    if (years > 0) {
+        ageString += `${years} year${years > 1 ? 's' : ''} `;
+    }
+    if (months > 0) {
+        ageString += `${months} month${months > 1 ? 's' : ''} `;
+    }
+    if (days > 0 || ageString === '') {
+        ageString += `${days} day${days > 1 ? 's' : ''}`;
+    }
+    
+    return { years, months, days, formatted: ageString.trim() };
 }
 
 function updateSummaryDashboard() {
@@ -513,14 +539,14 @@ function toggleSleep() {
         
         sleepSession = null;
         button.textContent = 'Start Sleep';
-        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 border border-gray-200';
+        button.className = 'bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all';
         
         updateUI();
         showMessage('Sleep session saved!');
     } else {
         sleepSession = { startTime: new Date() };
         button.textContent = 'Stop Sleep';
-        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-red-400 border border-gray-200';
+        button.className = 'bg-white border-2 border-red-300 hover:border-red-400 text-red-700 px-3 py-1 rounded-xl text-sm transition-all';
         showMessage('Sleep tracking started!');
     }
 }
@@ -750,17 +776,17 @@ function showBothCharts() {
 }
 
 function updateChartButtons() {
-    // Reset all buttons
+    // Reset all buttons to grey stroke style
     const buttons = ['weightChartBtn', 'heightChartBtn', 'bothChartBtn'];
     buttons.forEach(btnId => {
         const btn = document.getElementById(btnId);
-        btn.className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all hover:bg-gray-300';
+        btn.className = 'px-4 py-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm font-medium transition-all';
     });
     
-    // Highlight active button
+    // Highlight active button with darker border
     const activeButton = document.getElementById(currentChartType === 'weight' ? 'weightChartBtn' : 
                                                currentChartType === 'height' ? 'heightChartBtn' : 'bothChartBtn');
-    activeButton.className = 'px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium transition-all hover:bg-blue-600';
+    activeButton.className = 'px-4 py-2 bg-white border-2 border-gray-600 text-gray-800 rounded-xl text-sm font-medium transition-all';
 }
 
 function createGrowthChart() {
