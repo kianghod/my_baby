@@ -6,6 +6,8 @@ let diaperData = [];
 let sleepData = [];
 let growthChart = null;
 let currentChartType = 'weight';
+let users = [];
+let currentUserId = null;
 
 // Collapse/expand state for sections - Default all sections collapsed
 let collapsedSections = {
@@ -25,13 +27,74 @@ const API_BASE = '/api';
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
-    loadAllData();
-    setupEventListeners();
-    setDefaultDates();
+    loadUsers().then(() => {
+        setupEventListeners();
+        setDefaultDates();
+        loadAllData();
+    });
 });
+
+// Load users from API and setup user selector
+async function loadUsers() {
+    try {
+        const response = await fetch(`${API_BASE}/users`);
+        users = await response.json();
+        
+        const userSelector = document.getElementById('userSelector');
+        userSelector.innerHTML = '';
+        
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.display_name;
+            userSelector.appendChild(option);
+        });
+        
+        // Load saved user or default to first user
+        const savedUserId = localStorage.getItem('currentUserId');
+        if (savedUserId && users.find(u => u.id == savedUserId)) {
+            currentUserId = parseInt(savedUserId);
+        } else {
+            currentUserId = users[0]?.id || 1;
+        }
+        
+        userSelector.value = currentUserId;
+        localStorage.setItem('currentUserId', currentUserId);
+        
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Failed to load users');
+        // Default fallback
+        currentUserId = 1;
+    }
+}
+
+// Handle user change
+function handleUserChange() {
+    const userSelector = document.getElementById('userSelector');
+    const newUserId = parseInt(userSelector.value);
+    
+    if (newUserId !== currentUserId) {
+        currentUserId = newUserId;
+        localStorage.setItem('currentUserId', currentUserId);
+        
+        // Clear current data
+        babyData = {};
+        growthData = [];
+        feedingData = [];
+        diaperData = [];
+        sleepData = [];
+        
+        // Reload all data for new user
+        loadAllData();
+    }
+}
 
 // Setup event listeners
 function setupEventListeners() {
+    // User selector
+    document.getElementById('userSelector').addEventListener('change', handleUserChange);
+    
     // Form submissions
     document.getElementById('growthForm').addEventListener('submit', handleGrowthSubmit);
     document.getElementById('feedingForm').addEventListener('submit', handleFeedingSubmit);
@@ -81,36 +144,42 @@ async function loadAllData() {
 
 // API calls
 async function loadBabyData() {
-    const response = await fetch(`${API_BASE}/baby`);
+    if (!currentUserId) return;
+    const response = await fetch(`${API_BASE}/baby/${currentUserId}`);
     babyData = await response.json();
 }
 
 async function loadGrowthData() {
-    const response = await fetch(`${API_BASE}/growth`);
+    if (!currentUserId) return;
+    const response = await fetch(`${API_BASE}/growth/${currentUserId}`);
     growthData = await response.json();
 }
 
 async function loadFeedingData() {
-    const response = await fetch(`${API_BASE}/feeding`);
+    if (!currentUserId) return;
+    const response = await fetch(`${API_BASE}/feeding/${currentUserId}`);
     feedingData = await response.json();
 }
 
 async function loadDiaperData() {
-    const response = await fetch(`${API_BASE}/diaper`);
+    if (!currentUserId) return;
+    const response = await fetch(`${API_BASE}/diaper/${currentUserId}`);
     diaperData = await response.json();
 }
 
 async function loadSleepData() {
-    const response = await fetch(`${API_BASE}/sleep`);
+    if (!currentUserId) return;
+    const response = await fetch(`${API_BASE}/sleep/${currentUserId}`);
     sleepData = await response.json();
 }
 
 async function loadStats() {
+    if (!currentUserId) return;
     try {
         const [feedingStats, diaperStats, sleepStats] = await Promise.all([
-            fetch(`${API_BASE}/stats/feeding`).then(r => r.json()),
-            fetch(`${API_BASE}/stats/diaper`).then(r => r.json()),
-            fetch(`${API_BASE}/stats/sleep`).then(r => r.json())
+            fetch(`${API_BASE}/stats/feeding/${currentUserId}`).then(r => r.json()),
+            fetch(`${API_BASE}/stats/diaper/${currentUserId}`).then(r => r.json()),
+            fetch(`${API_BASE}/stats/sleep/${currentUserId}`).then(r => r.json())
         ]);
 
         // Update stats in UI
@@ -315,14 +384,14 @@ async function handleGrowthSubmit(e) {
         let response;
         if (editingEntry && editingType === 'growth') {
             // Update existing entry
-            response = await fetch(`${API_BASE}/growth/${editingEntry.id}`, {
+            response = await fetch(`${API_BASE}/growth/${currentUserId}/${editingEntry.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } else {
             // Create new entry
-            response = await fetch(`${API_BASE}/growth`, {
+            response = await fetch(`${API_BASE}/growth/${currentUserId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -364,14 +433,14 @@ async function handleFeedingSubmit(e) {
         let response;
         if (editingEntry && editingType === 'feeding') {
             // Update existing entry
-            response = await fetch(`${API_BASE}/feeding/${editingEntry.id}`, {
+            response = await fetch(`${API_BASE}/feeding/${currentUserId}/${editingEntry.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } else {
             // Create new entry
-            response = await fetch(`${API_BASE}/feeding`, {
+            response = await fetch(`${API_BASE}/feeding/${currentUserId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -412,14 +481,14 @@ async function handleDiaperSubmit(e) {
         let response;
         if (editingEntry && editingType === 'diaper') {
             // Update existing entry
-            response = await fetch(`${API_BASE}/diaper/${editingEntry.id}`, {
+            response = await fetch(`${API_BASE}/diaper/${currentUserId}/${editingEntry.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } else {
             // Create new entry
-            response = await fetch(`${API_BASE}/diaper`, {
+            response = await fetch(`${API_BASE}/diaper/${currentUserId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -474,14 +543,14 @@ async function handleSleepSubmit(e) {
         let response;
         if (editingEntry && editingType === 'sleep') {
             // Update existing entry
-            response = await fetch(`${API_BASE}/sleep/${editingEntry.id}`, {
+            response = await fetch(`${API_BASE}/sleep/${currentUserId}/${editingEntry.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } else {
             // Create new entry
-            response = await fetch(`${API_BASE}/sleep`, {
+            response = await fetch(`${API_BASE}/sleep/${currentUserId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -512,6 +581,11 @@ async function handleSleepSubmit(e) {
 async function handleBabyProfileSubmit(e) {
     e.preventDefault();
     
+    if (!currentUserId) {
+        showError('Please select a user first');
+        return;
+    }
+    
     const data = {
         name: document.getElementById('profileName').value,
         birthDate: document.getElementById('profileBirthDate').value,
@@ -519,7 +593,7 @@ async function handleBabyProfileSubmit(e) {
     };
 
     try {
-        const response = await fetch(`${API_BASE}/baby`, {
+        const response = await fetch(`${API_BASE}/baby/${currentUserId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -545,8 +619,13 @@ async function deleteEntry(type, id) {
         return;
     }
 
+    if (!currentUserId) {
+        showError('Please select a user first');
+        return;
+    }
+
     try {
-        const response = await fetch(`${API_BASE}/${type}/${id}`, {
+        const response = await fetch(`${API_BASE}/${type}/${currentUserId}/${id}`, {
             method: 'DELETE'
         });
 
@@ -627,7 +706,7 @@ function toggleSleep() {
             duration: Math.round((endTime - sleepSession.startTime) / (1000 * 60))
         };
         
-        fetch('/api/sleep', {
+        fetch(`/api/sleep/${currentUserId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -747,6 +826,11 @@ function editEntry(type, id) {
 
 // Function to change baby photo
 function changeBabyPhoto() {
+    if (!currentUserId) {
+        showError('Please select a user first');
+        return;
+    }
+    
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -755,9 +839,31 @@ function changeBabyPhoto() {
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                document.getElementById('babyPhoto').src = e.target.result;
-                // You can save this to the server if needed
-                babyData.photo = e.target.result;
+                const photoData = e.target.result;
+                
+                // Update baby data with new photo
+                const updatedData = {
+                    name: babyData.name,
+                    birthDate: babyData.birthDate,
+                    photo: photoData
+                };
+                
+                // Save to server
+                fetch(`${API_BASE}/baby/${currentUserId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('babyPhoto').src = photoData;
+                    babyData.photo = photoData;
+                    showSuccess('Photo updated successfully!');
+                })
+                .catch(error => {
+                    console.error('Error saving photo:', error);
+                    showError('Failed to save photo');
+                });
             };
             reader.readAsDataURL(file);
         }

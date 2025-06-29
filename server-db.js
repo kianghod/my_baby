@@ -18,66 +18,107 @@ const db = new sqlite3.Database(dbPath);
 
 // Create tables if they don't exist
 db.serialize(() => {
-    // Baby profile table
+    // Users table
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        display_name TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Baby profile table (updated with user_id)
     db.run(`CREATE TABLE IF NOT EXISTS baby_profile (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         birth_date TEXT NOT NULL,
         photo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
-    // Growth tracking table
+    // Growth tracking table (updated with user_id)
     db.run(`CREATE TABLE IF NOT EXISTS growth_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
         weight REAL NOT NULL,
         height REAL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
-    // Feeding tracking table
+    // Feeding tracking table (updated with user_id)
     db.run(`CREATE TABLE IF NOT EXISTS feeding_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
         time TEXT NOT NULL,
         amount REAL NOT NULL,
         type TEXT NOT NULL DEFAULT 'bottle',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
-    // Diaper tracking table
+    // Diaper tracking table (updated with user_id)
     db.run(`CREATE TABLE IF NOT EXISTS diaper_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
         time TEXT NOT NULL,
         type TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
-    // Sleep tracking table
+    // Sleep tracking table (updated with user_id)
     db.run(`CREATE TABLE IF NOT EXISTS sleep_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         date TEXT NOT NULL,
         start_time TEXT NOT NULL,
         end_time TEXT NOT NULL,
         duration INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
     )`);
 
-    // Insert default baby profile if none exists
-    db.get("SELECT COUNT(*) as count FROM baby_profile", (err, row) => {
+    // Insert default users if none exist
+    db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
         if (err) {
-            console.error('Error checking baby profile:', err);
+            console.error('Error checking users:', err);
             return;
         }
         if (row.count === 0) {
-            db.run(`INSERT INTO baby_profile (name, birth_date, photo) VALUES (?, ?, ?)`, 
-                ['Tommy', '2023-08-01', 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?q=80&w=200&h=200&fit=crop&crop=face'], (err) => {
-                if (err) {
-                    console.error('Error creating default profile:', err);
-                }
+            const defaultUsers = [
+                ['kiang', 'Kiang'],
+                ['aoey', 'Aoey'],
+                ['user3', 'User 3'],
+                ['user4', 'User 4'],
+                ['user5', 'User 5']
+            ];
+            
+            defaultUsers.forEach(([username, displayName]) => {
+                db.run(`INSERT INTO users (username, display_name) VALUES (?, ?)`, 
+                    [username, displayName], function(err) {
+                    if (err) {
+                        console.error('Error creating default user:', err);
+                        return;
+                    }
+                    
+                    // Create default baby profile for each user
+                    const babyName = username === 'kiang' ? 'Tommy' : username === 'aoey' ? 'Aoey Jr.' : `Baby ${displayName}`;
+                    const birthDate = '2023-08-01';
+                    const photo = 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?q=80&w=200&h=200&fit=crop&crop=face';
+                    
+                    db.run(`INSERT INTO baby_profile (user_id, name, birth_date, photo) VALUES (?, ?, ?, ?)`, 
+                        [this.lastID, babyName, birthDate, photo], (err) => {
+                        if (err) {
+                            console.error('Error creating default baby profile:', err);
+                        }
+                    });
+                });
             });
         }
     });
@@ -96,9 +137,22 @@ const calculateAge = (birthDate) => {
 
 // API Routes
 
+// Users endpoints
+app.get('/api/users', (req, res) => {
+    db.all("SELECT * FROM users ORDER BY id", (err, rows) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(rows || []);
+    });
+});
+
 // Baby profile endpoints
-app.get('/api/baby', (req, res) => {
-    db.get("SELECT * FROM baby_profile ORDER BY id DESC LIMIT 1", (err, row) => {
+app.get('/api/baby/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    db.get("SELECT * FROM baby_profile WHERE user_id = ?", [userId], (err, row) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -109,6 +163,7 @@ app.get('/api/baby', (req, res) => {
         const age = calculateAge(row.birth_date);
         res.json({
             id: row.id,
+            userId: row.user_id,
             name: row.name,
             birthDate: row.birth_date,
             photo: row.photo,
@@ -117,10 +172,11 @@ app.get('/api/baby', (req, res) => {
     });
 });
 
-app.put('/api/baby', (req, res) => {
+app.put('/api/baby/:userId', (req, res) => {
+    const userId = req.params.userId;
     const { name, birthDate, photo } = req.body;
     
-    db.get("SELECT id FROM baby_profile ORDER BY id DESC LIMIT 1", (err, row) => {
+    db.get("SELECT id FROM baby_profile WHERE user_id = ?", [userId], (err, row) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -128,33 +184,35 @@ app.put('/api/baby', (req, res) => {
         
         if (row) {
             // Update existing profile
-            db.run(`UPDATE baby_profile SET name = ?, birth_date = ?, photo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-                [name, birthDate, photo, row.id], function(err) {
+            db.run(`UPDATE baby_profile SET name = ?, birth_date = ?, photo = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?`,
+                [name, birthDate, photo, userId], function(err) {
                 if (err) {
                     console.error('Database error:', err);
                     return res.status(500).json({ error: 'Database error' });
                 }
                 const age = calculateAge(birthDate);
-                res.json({ id: row.id, name, birthDate, photo, age });
+                res.json({ id: row.id, userId: parseInt(userId), name, birthDate, photo, age });
             });
         } else {
             // Create new profile
-            db.run(`INSERT INTO baby_profile (name, birth_date, photo) VALUES (?, ?, ?)`,
-                [name, birthDate, photo], function(err) {
+            db.run(`INSERT INTO baby_profile (user_id, name, birth_date, photo) VALUES (?, ?, ?, ?)`,
+                [userId, name, birthDate, photo], function(err) {
                 if (err) {
                     console.error('Database error:', err);
                     return res.status(500).json({ error: 'Database error' });
                 }
                 const age = calculateAge(birthDate);
-                res.json({ id: this.lastID, name, birthDate, photo, age });
+                res.json({ id: this.lastID, userId: parseInt(userId), name, birthDate, photo, age });
             });
         }
     });
 });
 
 // Growth tracking endpoints
-app.get('/api/growth', (req, res) => {
-    db.all("SELECT * FROM growth_entries ORDER BY date DESC", (err, rows) => {
+app.get('/api/growth/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    db.all("SELECT * FROM growth_entries WHERE user_id = ? ORDER BY date DESC", [userId], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -163,26 +221,28 @@ app.get('/api/growth', (req, res) => {
     });
 });
 
-app.post('/api/growth', (req, res) => {
+app.post('/api/growth/:userId', (req, res) => {
+    const userId = req.params.userId;
     const { date, weight, height } = req.body;
     const entryDate = date || new Date().toISOString().split('T')[0];
     
-    db.run(`INSERT INTO growth_entries (date, weight, height) VALUES (?, ?, ?)`,
-        [entryDate, weight, height], function(err) {
+    db.run(`INSERT INTO growth_entries (user_id, date, weight, height) VALUES (?, ?, ?, ?)`,
+        [userId, entryDate, weight, height], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.json({ id: this.lastID, date: entryDate, weight, height });
+        res.json({ id: this.lastID, userId: parseInt(userId), date: entryDate, weight, height });
     });
 });
 
-app.put('/api/growth/:id', (req, res) => {
+app.put('/api/growth/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const { date, weight, height } = req.body;
     const id = req.params.id;
     
-    db.run(`UPDATE growth_entries SET date = ?, weight = ?, height = ? WHERE id = ?`,
-        [date, weight, height, id], function(err) {
+    db.run(`UPDATE growth_entries SET date = ?, weight = ?, height = ? WHERE id = ? AND user_id = ?`,
+        [date, weight, height, id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -190,14 +250,15 @@ app.put('/api/growth/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).json({ error: 'Growth entry not found' });
         }
-        res.json({ id: parseInt(id), date, weight, height });
+        res.json({ id: parseInt(id), userId: parseInt(userId), date, weight, height });
     });
 });
 
-app.delete('/api/growth/:id', (req, res) => {
+app.delete('/api/growth/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const id = req.params.id;
     
-    db.run(`DELETE FROM growth_entries WHERE id = ?`, [id], function(err) {
+    db.run(`DELETE FROM growth_entries WHERE id = ? AND user_id = ?`, [id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -207,8 +268,10 @@ app.delete('/api/growth/:id', (req, res) => {
 });
 
 // Feeding tracking endpoints
-app.get('/api/feeding', (req, res) => {
-    db.all("SELECT * FROM feeding_entries ORDER BY date DESC, time DESC", (err, rows) => {
+app.get('/api/feeding/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    db.all("SELECT * FROM feeding_entries WHERE user_id = ? ORDER BY date DESC, time DESC", [userId], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -217,27 +280,29 @@ app.get('/api/feeding', (req, res) => {
     });
 });
 
-app.post('/api/feeding', (req, res) => {
+app.post('/api/feeding/:userId', (req, res) => {
+    const userId = req.params.userId;
     const { date, time, amount, type } = req.body;
     const entryDate = date || new Date().toISOString().split('T')[0];
     const feedingType = type || 'bottle';
     
-    db.run(`INSERT INTO feeding_entries (date, time, amount, type) VALUES (?, ?, ?, ?)`,
-        [entryDate, time, amount, feedingType], function(err) {
+    db.run(`INSERT INTO feeding_entries (user_id, date, time, amount, type) VALUES (?, ?, ?, ?, ?)`,
+        [userId, entryDate, time, amount, feedingType], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.json({ id: this.lastID, date: entryDate, time, amount, type: feedingType });
+        res.json({ id: this.lastID, userId: parseInt(userId), date: entryDate, time, amount, type: feedingType });
     });
 });
 
-app.put('/api/feeding/:id', (req, res) => {
+app.put('/api/feeding/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const { date, time, amount, type } = req.body;
     const id = req.params.id;
     
-    db.run(`UPDATE feeding_entries SET date = ?, time = ?, amount = ?, type = ? WHERE id = ?`,
-        [date, time, amount, type, id], function(err) {
+    db.run(`UPDATE feeding_entries SET date = ?, time = ?, amount = ?, type = ? WHERE id = ? AND user_id = ?`,
+        [date, time, amount, type, id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -245,14 +310,15 @@ app.put('/api/feeding/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).json({ error: 'Feeding entry not found' });
         }
-        res.json({ id: parseInt(id), date, time, amount, type });
+        res.json({ id: parseInt(id), userId: parseInt(userId), date, time, amount, type });
     });
 });
 
-app.delete('/api/feeding/:id', (req, res) => {
+app.delete('/api/feeding/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const id = req.params.id;
     
-    db.run(`DELETE FROM feeding_entries WHERE id = ?`, [id], function(err) {
+    db.run(`DELETE FROM feeding_entries WHERE id = ? AND user_id = ?`, [id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -262,8 +328,10 @@ app.delete('/api/feeding/:id', (req, res) => {
 });
 
 // Diaper tracking endpoints
-app.get('/api/diaper', (req, res) => {
-    db.all("SELECT * FROM diaper_entries ORDER BY date DESC, time DESC", (err, rows) => {
+app.get('/api/diaper/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    db.all("SELECT * FROM diaper_entries WHERE user_id = ? ORDER BY date DESC, time DESC", [userId], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -272,26 +340,28 @@ app.get('/api/diaper', (req, res) => {
     });
 });
 
-app.post('/api/diaper', (req, res) => {
+app.post('/api/diaper/:userId', (req, res) => {
+    const userId = req.params.userId;
     const { date, time, type } = req.body;
     const entryDate = date || new Date().toISOString().split('T')[0];
     
-    db.run(`INSERT INTO diaper_entries (date, time, type) VALUES (?, ?, ?)`,
-        [entryDate, time, type], function(err) {
+    db.run(`INSERT INTO diaper_entries (user_id, date, time, type) VALUES (?, ?, ?, ?)`,
+        [userId, entryDate, time, type], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.json({ id: this.lastID, date: entryDate, time, type });
+        res.json({ id: this.lastID, userId: parseInt(userId), date: entryDate, time, type });
     });
 });
 
-app.put('/api/diaper/:id', (req, res) => {
+app.put('/api/diaper/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const { date, time, type } = req.body;
     const id = req.params.id;
     
-    db.run(`UPDATE diaper_entries SET date = ?, time = ?, type = ? WHERE id = ?`,
-        [date, time, type, id], function(err) {
+    db.run(`UPDATE diaper_entries SET date = ?, time = ?, type = ? WHERE id = ? AND user_id = ?`,
+        [date, time, type, id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -299,14 +369,15 @@ app.put('/api/diaper/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).json({ error: 'Diaper entry not found' });
         }
-        res.json({ id: parseInt(id), date, time, type });
+        res.json({ id: parseInt(id), userId: parseInt(userId), date, time, type });
     });
 });
 
-app.delete('/api/diaper/:id', (req, res) => {
+app.delete('/api/diaper/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const id = req.params.id;
     
-    db.run(`DELETE FROM diaper_entries WHERE id = ?`, [id], function(err) {
+    db.run(`DELETE FROM diaper_entries WHERE id = ? AND user_id = ?`, [id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -316,8 +387,10 @@ app.delete('/api/diaper/:id', (req, res) => {
 });
 
 // Sleep tracking endpoints
-app.get('/api/sleep', (req, res) => {
-    db.all("SELECT * FROM sleep_entries ORDER BY date DESC, start_time DESC", (err, rows) => {
+app.get('/api/sleep/:userId', (req, res) => {
+    const userId = req.params.userId;
+    
+    db.all("SELECT * FROM sleep_entries WHERE user_id = ? ORDER BY date DESC, start_time DESC", [userId], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -325,6 +398,7 @@ app.get('/api/sleep', (req, res) => {
         // Convert database fields to match frontend expectations
         const sleepData = rows.map(row => ({
             id: row.id,
+            userId: row.user_id,
             date: row.date,
             startTime: row.start_time,
             endTime: row.end_time,
@@ -334,26 +408,28 @@ app.get('/api/sleep', (req, res) => {
     });
 });
 
-app.post('/api/sleep', (req, res) => {
+app.post('/api/sleep/:userId', (req, res) => {
+    const userId = req.params.userId;
     const { date, startTime, endTime, duration } = req.body;
     const entryDate = date || new Date().toISOString().split('T')[0];
     
-    db.run(`INSERT INTO sleep_entries (date, start_time, end_time, duration) VALUES (?, ?, ?, ?)`,
-        [entryDate, startTime, endTime, duration], function(err) {
+    db.run(`INSERT INTO sleep_entries (user_id, date, start_time, end_time, duration) VALUES (?, ?, ?, ?, ?)`,
+        [userId, entryDate, startTime, endTime, duration], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.json({ id: this.lastID, date: entryDate, startTime, endTime, duration });
+        res.json({ id: this.lastID, userId: parseInt(userId), date: entryDate, startTime, endTime, duration });
     });
 });
 
-app.put('/api/sleep/:id', (req, res) => {
+app.put('/api/sleep/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const { date, startTime, endTime, duration } = req.body;
     const id = req.params.id;
     
-    db.run(`UPDATE sleep_entries SET date = ?, start_time = ?, end_time = ?, duration = ? WHERE id = ?`,
-        [date, startTime, endTime, duration, id], function(err) {
+    db.run(`UPDATE sleep_entries SET date = ?, start_time = ?, end_time = ?, duration = ? WHERE id = ? AND user_id = ?`,
+        [date, startTime, endTime, duration, id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -361,14 +437,15 @@ app.put('/api/sleep/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).json({ error: 'Sleep entry not found' });
         }
-        res.json({ id: parseInt(id), date, startTime, endTime, duration });
+        res.json({ id: parseInt(id), userId: parseInt(userId), date, startTime, endTime, duration });
     });
 });
 
-app.delete('/api/sleep/:id', (req, res) => {
+app.delete('/api/sleep/:userId/:id', (req, res) => {
+    const userId = req.params.userId;
     const id = req.params.id;
     
-    db.run(`DELETE FROM sleep_entries WHERE id = ?`, [id], function(err) {
+    db.run(`DELETE FROM sleep_entries WHERE id = ? AND user_id = ?`, [id, userId], function(err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -378,18 +455,19 @@ app.delete('/api/sleep/:id', (req, res) => {
 });
 
 // Statistics endpoints
-app.get('/api/stats/feeding', (req, res) => {
+app.get('/api/stats/feeding/:userId', (req, res) => {
+    const userId = req.params.userId;
     const today = new Date().toISOString().split('T')[0];
     
     // Get today's feedings
-    db.all("SELECT * FROM feeding_entries WHERE date = ?", [today], (err, todayRows) => {
+    db.all("SELECT * FROM feeding_entries WHERE user_id = ? AND date = ?", [userId, today], (err, todayRows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
         
         // Get all time total
-        db.get("SELECT SUM(amount) as total FROM feeding_entries", (err, totalRow) => {
+        db.get("SELECT SUM(amount) as total FROM feeding_entries WHERE user_id = ?", [userId], (err, totalRow) => {
             if (err) {
                 console.error('Database error:', err);
                 return res.status(500).json({ error: 'Database error' });
@@ -408,10 +486,11 @@ app.get('/api/stats/feeding', (req, res) => {
     });
 });
 
-app.get('/api/stats/diaper', (req, res) => {
+app.get('/api/stats/diaper/:userId', (req, res) => {
+    const userId = req.params.userId;
     const today = new Date().toISOString().split('T')[0];
     
-    db.all("SELECT * FROM diaper_entries WHERE date = ?", [today], (err, rows) => {
+    db.all("SELECT * FROM diaper_entries WHERE user_id = ? AND date = ?", [userId, today], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -428,10 +507,11 @@ app.get('/api/stats/diaper', (req, res) => {
     });
 });
 
-app.get('/api/stats/sleep', (req, res) => {
+app.get('/api/stats/sleep/:userId', (req, res) => {
+    const userId = req.params.userId;
     const today = new Date().toISOString().split('T')[0];
     
-    db.all("SELECT * FROM sleep_entries WHERE date = ?", [today], (err, rows) => {
+    db.all("SELECT * FROM sleep_entries WHERE user_id = ? AND date = ?", [userId, today], (err, rows) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });
