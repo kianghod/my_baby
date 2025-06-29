@@ -1,50 +1,110 @@
-// Static version - uses localStorage instead of server
-const API_BASE = ''; // No API needed for static version
+// Baby Tracker - Offline Version with localStorage
+// Matches all features from the database version
 
-// Global variables
+// Global state
+let babyData = {};
 let growthData = [];
 let feedingData = [];
-let diaperData = [];
+let diaperData = [];  
 let sleepData = [];
-let stats = {};
-let babyData = {};
+let growthChart = null;
+let currentChartType = 'weight';
+let users = [];
+let currentUserId = null;
 
+// Collapse/expand state for sections - Default all sections collapsed
+let collapsedSections = {
+    growth: true,
+    milk: true,
+    feeding: true,
+    diaper: true,
+    sleep: true
+};
+
+// Variables for edit mode
 let editingEntry = null;
 let editingType = null;
 let sleepSession = null;
 
-// Chart variables
-let growthChart = null;
-let currentChartType = 'both';
-
-// Collapsed sections state
-let collapsedSections = {
-    growth: false,
-    milk: false,
-    feeding: false,
-    diaper: false,
-    sleep: false
-};
-
-// Initialize when DOM is loaded
+// Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
-    initializeStaticApp();
-});
-
-function initializeStaticApp() {
+    initializeUsers();
     setupEventListeners();
     setDefaultDates();
-    loadAllDataFromStorage();
-    updateUI();
+    loadAllData();
+});
+
+// Initialize default users
+function initializeUsers() {
+    users = [
+        { id: 1, display_name: 'Kiang' },
+        { id: 2, display_name: 'Aoey' },
+        { id: 3, display_name: 'User 3' },
+        { id: 4, display_name: 'User 4' },
+        { id: 5, display_name: 'User 5' }
+    ];
+    
+    const userSelector = document.getElementById('userSelector');
+    userSelector.innerHTML = '';
+    
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = user.display_name;
+        userSelector.appendChild(option);
+    });
+    
+    // Load saved user or default to first user
+    const savedUserId = localStorage.getItem('currentUserId');
+    if (savedUserId && users.find(u => u.id == savedUserId)) {
+        currentUserId = parseInt(savedUserId);
+    } else {
+        currentUserId = users[0]?.id || 1;
+    }
+    
+    userSelector.value = currentUserId;
+    localStorage.setItem('currentUserId', currentUserId);
 }
 
+// Handle user change
+function handleUserChange() {
+    const userSelector = document.getElementById('userSelector');
+    const newUserId = parseInt(userSelector.value);
+    
+    if (newUserId !== currentUserId) {
+        currentUserId = newUserId;
+        localStorage.setItem('currentUserId', currentUserId);
+        
+        // Clear current data
+        babyData = {};
+        growthData = [];
+        feedingData = [];
+        diaperData = [];
+        sleepData = [];
+        
+        // Reload all data for new user
+        loadAllData();
+    }
+}
+
+// Setup event listeners
 function setupEventListeners() {
-    // Form event listeners
+    // User selector
+    document.getElementById('userSelector').addEventListener('change', handleUserChange);
+    
+    // Form submissions
     document.getElementById('growthForm').addEventListener('submit', handleGrowthSubmit);
     document.getElementById('feedingForm').addEventListener('submit', handleFeedingSubmit);
     document.getElementById('diaperForm').addEventListener('submit', handleDiaperSubmit);
     document.getElementById('sleepForm').addEventListener('submit', handleSleepSubmit);
     document.getElementById('babyProfileForm').addEventListener('submit', handleBabyProfileSubmit);
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('fixed') && event.target.classList.contains('inset-0')) {
+            event.target.classList.add('hidden');
+        }
+    });
 }
 
 function setDefaultDates() {
@@ -59,29 +119,77 @@ function setDefaultDates() {
     document.getElementById('sleepDate').value = today;
 }
 
-// Storage functions
-function saveToStorage(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+// Load all data from localStorage
+function loadAllData() {
+    try {
+        loadBabyData();
+        loadGrowthData();
+        loadFeedingData();
+        loadDiaperData();
+        loadSleepData();
+        
+        updateUI();
+    } catch (error) {
+        console.error('Error loading data:', error);
+        showError('Failed to load data');
+    }
 }
 
-function loadFromStorage(key, defaultValue = []) {
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : defaultValue;
+// LocalStorage operations
+function loadBabyData() {
+    const key = `babyData_${currentUserId}`;
+    const defaultData = {
+        id: currentUserId,
+        name: currentUserId === 1 ? 'Tommy' : currentUserId === 2 ? 'Baby Aoey' : `Baby ${currentUserId}`,
+        birth_date: '2023-09-23',
+        photo: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80'
+    };
+    babyData = JSON.parse(localStorage.getItem(key) || JSON.stringify(defaultData));
 }
 
-function loadAllDataFromStorage() {
-    babyData = loadFromStorage('babyData', {
-        name: 'Tommy',
-        birthDate: '2023-08-01',
-        photo: '/public/favicon.svg'
-    });
-    
-    growthData = loadFromStorage('growthData', []);
-    feedingData = loadFromStorage('feedingData', []);
-    diaperData = loadFromStorage('diaperData', []);
-    sleepData = loadFromStorage('sleepData', []);
-    
-    calculateStats();
+function saveBabyData() {
+    const key = `babyData_${currentUserId}`;
+    localStorage.setItem(key, JSON.stringify(babyData));
+}
+
+function loadGrowthData() {
+    const key = `growthData_${currentUserId}`;
+    growthData = JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function saveGrowthData() {
+    const key = `growthData_${currentUserId}`;
+    localStorage.setItem(key, JSON.stringify(growthData));
+}
+
+function loadFeedingData() {
+    const key = `feedingData_${currentUserId}`;
+    feedingData = JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function saveFeedingData() {
+    const key = `feedingData_${currentUserId}`;
+    localStorage.setItem(key, JSON.stringify(feedingData));
+}
+
+function loadDiaperData() {
+    const key = `diaperData_${currentUserId}`;
+    diaperData = JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function saveDiaperData() {
+    const key = `diaperData_${currentUserId}`;
+    localStorage.setItem(key, JSON.stringify(diaperData));
+}
+
+function loadSleepData() {
+    const key = `sleepData_${currentUserId}`;
+    sleepData = JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function saveSleepData() {
+    const key = `sleepData_${currentUserId}`;
+    localStorage.setItem(key, JSON.stringify(sleepData));
 }
 
 function calculateStats() {
