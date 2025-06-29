@@ -388,13 +388,13 @@ function handleGrowthSubmit(e) {
         return;
     }
     
-    if (!weight || weight <= 0 || weight > 50) {
-        showMessage('Please enter a valid weight (0-50 kg)', 'error');
+    if (isNaN(weight) || weight <= 0) {
+        showMessage('Please enter a valid weight', 'error');
         return;
     }
     
-    if (height && (height <= 0 || height > 200)) {
-        showMessage('Please enter a valid height (0-200 cm)', 'error');
+    if (height && (isNaN(height) || height <= 0)) {
+        showMessage('Please enter a valid height', 'error');
         return;
     }
     
@@ -442,8 +442,8 @@ function handleFeedingSubmit(e) {
         return;
     }
     
-    if (!amount || amount <= 0 || amount > 1000) {
-        showMessage('Please enter a valid amount (0-1000 oz)', 'error');
+    if (isNaN(amount) || amount <= 0) {
+        showMessage('Please enter a valid amount', 'error');
         return;
     }
     
@@ -550,8 +550,8 @@ function handleSleepSubmit(e) {
     
     if (duration <= 0) duration += 24 * 60;
     
-    if (duration > 24 * 60) {
-        showMessage('Sleep duration cannot exceed 24 hours', 'error');
+    if (duration <= 0) {
+        showMessage('Please enter valid sleep times', 'error');
         return;
     }
     
