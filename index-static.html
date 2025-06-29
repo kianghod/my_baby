@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Tracker - Static Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-poppins bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+    <div class="max-w-sm mx-auto bg-white/10 backdrop-blur-sm min-h-screen border-l border-r border-white/20">
+        
+        <!-- Header with Baby Info -->
+        <header class="px-6 py-8 relative bg-gray-50 border-b border-gray-200">
+            <div class="flex items-start mb-4">
+                <div class="w-20 h-20 rounded-full overflow-hidden mr-4 border-3 border-white shadow-lg cursor-pointer hover:opacity-75 transition-opacity" onclick="changeBabyPhoto()">
+                    <img id="babyPhoto" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e5e7eb'/%3E%3Ctext x='50' y='55' text-anchor='middle' font-size='30' fill='%239ca3af'%3E👶%3C/text%3E%3C/svg%3E" alt="Baby" class="w-full h-full object-cover">
+                </div>
+                
+                <div class="flex-1">
+                    <h1 id="babyName" class="text-2xl font-bold text-gray-800 mb-1">Tommy</h1>
+                    <p id="babyAge" class="text-sm text-gray-600 mb-3">5 months 28 days old</p>
+                    <button class="text-blue-600 text-sm hover:underline" onclick="editBabyProfile()">
+                        <i class="fas fa-edit mr-1"></i>Edit Profile
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-5 gap-3 text-center">
+                <!-- Weight Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-green-500 text-xs mb-1">
+                        <i class="fas fa-ruler-vertical"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="latestWeight">0kg</div>
+                    <div class="text-xs text-gray-600">Weight</div>
+                </div>
+                
+                <!-- Feeding Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-blue-500 text-xs mb-1">
+                        <i class="fas fa-bottle-water"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="todayFeedings">0</div>
+                    <div class="text-xs text-gray-600">Today</div>
+                </div>
+                
+                <!-- Total Milk -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-orange-500 text-xs mb-1">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="totalMilk">0oz</div>
+                    <div class="text-xs text-gray-600">Total</div>
+                </div>
+                
+                <!-- Diaper Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-pink-500 text-xs mb-1">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="todayDiapers">0/0</div>
+                    <div class="text-xs text-gray-600">P/P</div>
+                </div>
+                
+                <!-- Sleep Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-purple-500 text-xs mb-1">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="todaySleep">0h</div>
+                    <div class="text-xs text-gray-600">Sleep</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Sections -->
+        <main class="px-6 pb-6 bg-white">
+            <!-- Growth Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-green-300">
+                        <i class="fas fa-ruler-vertical"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Growth</h2>
+                        <p id="growthSubtitle" class="text-sm text-gray-600">Latest measurements</p>
+                    </div>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-green-300 border border-gray-200" onclick="addGrowthEntry()">+Add</button>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-3 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Date</span>
+                        <span>Weight</span>
+                        <span>Height</span>
+                    </div>
+                    <div id="growthList">
+                        <div class="col-span-3 text-center py-10 text-gray-500">
+                            <div class="text-base">No growth entries yet</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feeding Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-blue-300">
+                        <i class="fas fa-bottle-water"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Feeding</h2>
+                        <p class="text-sm text-gray-600">Track milk intake</p>
+                    </div>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-blue-300 border border-gray-200" onclick="addFeedingEntry()">+Add</button>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-2 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Time</span>
+                        <span>Amount (oz)</span>
+                    </div>
+                    <div id="feedingList">
+                        <div class="col-span-2 text-center py-10 text-gray-500">
+                            <div class="text-base">No feeding entries yet</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Diaper Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-pink-300">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Diaper Changes</h2>
+                        <p class="text-sm text-gray-600">Track pee and poo</p>
+                    </div>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-pink-300 border border-gray-200" onclick="addDiaperEntry()">+Add</button>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-3 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Date</span>
+                        <span>Time</span>
+                        <span>Type</span>
+                    </div>
+                    <div id="diaperList">
+                        <div class="col-span-3 text-center py-10 text-gray-500">
+                            <div class="text-base">No diaper entries yet</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sleep Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-purple-300">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Sleep</h2>
+                        <p class="text-sm text-gray-600">Track sleep sessions</p>
+                    </div>
+                    <button id="sleepToggleBtn" class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 border border-gray-200" onclick="toggleSleep()">Start Sleep</button>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-3 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Date</span>
+                        <span>Duration</span>
+                        <span>Time</span>
+                    </div>
+                    <div id="sleepList">
+                        <div class="col-span-3 text-center py-10 text-gray-500">
+                            <div class="text-base">No sleep entries yet</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="growthModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-xl text-center font-semibold text-gray-800">Add Growth Entry</h3>
+            <form id="growthForm" class="flex flex-col gap-3">
+                <input type="date" id="growthDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="number" id="growthWeight" placeholder="Weight (kg)" step="0.1" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="number" id="growthHeight" placeholder="Height (cm)" step="0.1" class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('growthModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-green-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="feedingModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Add Feeding Entry</h3>
+            <form id="feedingForm" class="flex flex-col gap-3">
+                <input type="date" id="feedingDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="time" id="feedingTime" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="number" id="feedingAmount" placeholder="Amount (oz)" step="0.1" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <select id="feedingType" class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                    <option value="bottle">Bottle</option>
+                    <option value="breast">Breast</option>
+                </select>
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('feedingModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-blue-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="diaperModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Add Diaper Change</h3>
+            <form id="diaperForm" class="flex flex-col gap-3">
+                <input type="date" id="diaperDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="time" id="diaperTime" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <select id="diaperType" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                    <option value="pee">Pee</option>
+                    <option value="poo">Poo</option>
+                    <option value="both">Both</option>
+                </select>
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('diaperModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-pink-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="sleepModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Add Sleep Entry</h3>
+            <form id="sleepForm" class="flex flex-col gap-3">
+                <input type="date" id="sleepDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="time" id="sleepStart" placeholder="Start Time" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="time" id="sleepEnd" placeholder="End Time" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('sleepModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-purple-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="babyProfileModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Edit Baby Profile</h3>
+            <form id="babyProfileForm" class="flex flex-col gap-3">
+                <input type="text" id="profileName" placeholder="Baby's Name" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <input type="date" id="profileBirthDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800">
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('babyProfileModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-pink-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+// Static Baby Tracker App - Uses localStorage
+let growthData = JSON.parse(localStorage.getItem('growthData') || '[]');
+let feedingData = JSON.parse(localStorage.getItem('feedingData') || '[]');
+let diaperData = JSON.parse(localStorage.getItem('diaperData') || '[]');
+let sleepData = JSON.parse(localStorage.getItem('sleepData') || '[]');
+let babyData = JSON.parse(localStorage.getItem('babyData') || '{"name":"Tommy","birthDate":"2023-08-01"}');
+
+let editingEntry = null;
+let sleepSession = null;
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    setDefaultDates();
+    updateUI();
+});
+
+function setupEventListeners() {
+    document.getElementById('growthForm').addEventListener('submit', handleGrowthSubmit);
+    document.getElementById('feedingForm').addEventListener('submit', handleFeedingSubmit);
+    document.getElementById('diaperForm').addEventListener('submit', handleDiaperSubmit);
+    document.getElementById('sleepForm').addEventListener('submit', handleSleepSubmit);
+    document.getElementById('babyProfileForm').addEventListener('submit', handleBabyProfileSubmit);
+}
+
+function setDefaultDates() {
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date().toTimeString().split(' ')[0].slice(0, 5);
+    
+    document.getElementById('growthDate').value = today;
+    document.getElementById('feedingDate').value = today;
+    document.getElementById('feedingTime').value = now;
+    document.getElementById('diaperDate').value = today;
+    document.getElementById('diaperTime').value = now;
+    document.getElementById('sleepDate').value = today;
+}
+
+function updateUI() {
+    updateBabyProfile();
+    updateGrowthList();
+    updateFeedingList();
+    updateDiaperList();
+    updateSleepList();
+    updateSummaryDashboard();
+}
+
+function updateBabyProfile() {
+    document.getElementById('babyName').textContent = babyData.name || 'Baby';
+    if (babyData.birthDate) {
+        const age = calculateAge(babyData.birthDate);
+        document.getElementById('babyAge').textContent = `${age.months} months ${age.days} days old`;
+    }
+}
+
+function calculateAge(birthDate) {
+    const birth = new Date(birthDate);
+    const now = new Date();
+    const diffTime = Math.abs(now - birth);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const months = Math.floor(diffDays / 30);
+    const days = diffDays % 30;
+    return { months, days };
+}
+
+function updateSummaryDashboard() {
+    if (growthData.length > 0) {
+        const latest = growthData.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        document.getElementById('latestWeight').textContent = latest.weight + 'kg';
+    }
+    
+    const totalMilk = feedingData.reduce((sum, f) => sum + f.amount, 0);
+    document.getElementById('totalMilk').textContent = totalMilk + 'oz';
+    
+    const today = new Date().toDateString();
+    const todayFeedings = feedingData.filter(f => new Date(f.date).toDateString() === today);
+    document.getElementById('todayFeedings').textContent = todayFeedings.length;
+    
+    const todayDiapers = diaperData.filter(d => new Date(d.date).toDateString() === today);
+    const peeCount = todayDiapers.filter(d => d.type === 'pee' || d.type === 'both').length;
+    const pooCount = todayDiapers.filter(d => d.type === 'poo' || d.type === 'both').length;
+    document.getElementById('todayDiapers').textContent = `${peeCount}/${pooCount}`;
+    
+    const todaySleep = sleepData.filter(s => new Date(s.date).toDateString() === today);
+    const totalMinutes = todaySleep.reduce((sum, s) => sum + s.duration, 0);
+    document.getElementById('todaySleep').textContent = Math.round(totalMinutes / 60) + 'h';
+}
+
+function updateGrowthList() {
+    const list = document.getElementById('growthList');
+    if (growthData.length === 0) {
+        list.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No growth entries yet</div>';
+        return;
+    }
+    
+    const sorted = growthData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
+        <div class="grid grid-cols-3 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('growth', ${entry.id})">
+            <span class="text-xs">${formatDate(new Date(entry.date))}</span>
+            <span>${entry.weight}kg</span>
+            <span>${entry.height || '-'}cm</span>
+            <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('growth', ${entry.id})" title="Delete">×</button>
+        </div>
+    `).join('');
+}
+
+function updateFeedingList() {
+    const list = document.getElementById('feedingList');
+    if (feedingData.length === 0) {
+        list.innerHTML = '<div class="col-span-2 text-center py-10 text-gray-500">No feeding entries yet</div>';
+        return;
+    }
+    
+    const sorted = feedingData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
+        <div class="grid grid-cols-2 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('feeding', ${entry.id})">
+            <span>${entry.time}</span>
+            <span>${entry.amount}oz</span>
+            <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('feeding', ${entry.id})" title="Delete">×</button>
+        </div>
+    `).join('');
+}
+
+function updateDiaperList() {
+    const list = document.getElementById('diaperList');
+    if (diaperData.length === 0) {
+        list.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No diaper entries yet</div>';
+        return;
+    }
+    
+    const sorted = diaperData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
+        <div class="grid grid-cols-3 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('diaper', ${entry.id})">
+            <span class="text-xs">${formatDate(new Date(entry.date))}</span>
+            <span>${entry.time}</span>
+            <span>${entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}</span>
+            <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('diaper', ${entry.id})" title="Delete">×</button>
+        </div>
+    `).join('');
+}
+
+function updateSleepList() {
+    const list = document.getElementById('sleepList');
+    if (sleepData.length === 0) {
+        list.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No sleep entries yet</div>';
+        return;
+    }
+    
+    const sorted = sleepData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
+        <div class="grid grid-cols-3 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('sleep', ${entry.id})">
+            <span class="text-xs">${formatDate(new Date(entry.date))}</span>
+            <span>${Math.round(entry.duration / 60)}h</span>
+            <span class="text-xs">${entry.startTime}-${entry.endTime}</span>
+            <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('sleep', ${entry.id})" title="Delete">×</button>
+        </div>
+    `).join('');
+}
+
+// Form handlers
+function handleGrowthSubmit(e) {
+    e.preventDefault();
+    const data = {
+        id: editingEntry ? editingEntry.id : Date.now(),
+        date: document.getElementById('growthDate').value,
+        weight: parseFloat(document.getElementById('growthWeight').value),
+        height: parseFloat(document.getElementById('growthHeight').value) || null
+    };
+    
+    if (editingEntry) {
+        const index = growthData.findIndex(item => item.id === editingEntry.id);
+        if (index !== -1) growthData[index] = data;
+    } else {
+        growthData.push(data);
+    }
+    
+    localStorage.setItem('growthData', JSON.stringify(growthData));
+    updateUI();
+    closeModal('growthModal');
+    showMessage(editingEntry ? 'Growth updated!' : 'Growth added!');
+    document.getElementById('growthForm').reset();
+    setDefaultDates();
+    editingEntry = null;
+}
+
+function handleFeedingSubmit(e) {
+    e.preventDefault();
+    const data = {
+        id: editingEntry ? editingEntry.id : Date.now(),
+        date: document.getElementById('feedingDate').value,
+        time: document.getElementById('feedingTime').value,
+        amount: parseFloat(document.getElementById('feedingAmount').value),
+        type: document.getElementById('feedingType').value
+    };
+    
+    if (editingEntry) {
+        const index = feedingData.findIndex(item => item.id === editingEntry.id);
+        if (index !== -1) feedingData[index] = data;
+    } else {
+        feedingData.push(data);
+    }
+    
+    localStorage.setItem('feedingData', JSON.stringify(feedingData));
+    updateUI();
+    closeModal('feedingModal');
+    showMessage(editingEntry ? 'Feeding updated!' : 'Feeding added!');
+    document.getElementById('feedingForm').reset();
+    setDefaultDates();
+    editingEntry = null;
+}
+
+function handleDiaperSubmit(e) {
+    e.preventDefault();
+    const data = {
+        id: editingEntry ? editingEntry.id : Date.now(),
+        date: document.getElementById('diaperDate').value,
+        time: document.getElementById('diaperTime').value,
+        type: document.getElementById('diaperType').value
+    };
+    
+    if (editingEntry) {
+        const index = diaperData.findIndex(item => item.id === editingEntry.id);
+        if (index !== -1) diaperData[index] = data;
+    } else {
+        diaperData.push(data);
+    }
+    
+    localStorage.setItem('diaperData', JSON.stringify(diaperData));
+    updateUI();
+    closeModal('diaperModal');
+    showMessage(editingEntry ? 'Diaper updated!' : 'Diaper added!');
+    document.getElementById('diaperForm').reset();
+    setDefaultDates();
+    editingEntry = null;
+}
+
+function handleSleepSubmit(e) {
+    e.preventDefault();
+    const startTime = document.getElementById('sleepStart').value;
+    const endTime = document.getElementById('sleepEnd').value;
+    
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    let duration = (end - start) / (1000 * 60);
+    
+    if (duration <= 0) duration += 24 * 60;
+    
+    const data = {
+        id: editingEntry ? editingEntry.id : Date.now(),
+        date: document.getElementById('sleepDate').value,
+        startTime: startTime,
+        endTime: endTime,
+        duration: duration
+    };
+    
+    if (editingEntry) {
+        const index = sleepData.findIndex(item => item.id === editingEntry.id);
+        if (index !== -1) sleepData[index] = data;
+    } else {
+        sleepData.push(data);
+    }
+    
+    localStorage.setItem('sleepData', JSON.stringify(sleepData));
+    updateUI();
+    closeModal('sleepModal');
+    showMessage(editingEntry ? 'Sleep updated!' : 'Sleep added!');
+    document.getElementById('sleepForm').reset();
+    setDefaultDates();
+    editingEntry = null;
+}
+
+function handleBabyProfileSubmit(e) {
+    e.preventDefault();
+    babyData.name = document.getElementById('profileName').value;
+    babyData.birthDate = document.getElementById('profileBirthDate').value;
+    localStorage.setItem('babyData', JSON.stringify(babyData));
+    updateBabyProfile();
+    closeModal('babyProfileModal');
+    showMessage('Profile updated!');
+}
+
+// UI Functions
+function addGrowthEntry() {
+    editingEntry = null;
+    document.querySelector('#growthModal h3').textContent = 'Add Growth Entry';
+    document.getElementById('growthForm').reset();
+    setDefaultDates();
+    document.getElementById('growthModal').classList.remove('hidden');
+}
+
+function addFeedingEntry() {
+    editingEntry = null;
+    document.querySelector('#feedingModal h3').textContent = 'Add Feeding Entry';
+    document.getElementById('feedingForm').reset();
+    setDefaultDates();
+    document.getElementById('feedingModal').classList.remove('hidden');
+}
+
+function addDiaperEntry() {
+    editingEntry = null;
+    document.querySelector('#diaperModal h3').textContent = 'Add Diaper Change';
+    document.getElementById('diaperForm').reset();
+    setDefaultDates();
+    document.getElementById('diaperModal').classList.remove('hidden');
+}
+
+function toggleSleep() {
+    const button = document.getElementById('sleepToggleBtn');
+    
+    if (sleepSession) {
+        const endTime = new Date();
+        const sleepEntry = {
+            id: Date.now(),
+            date: sleepSession.startTime.toISOString().split('T')[0],
+            startTime: sleepSession.startTime.toTimeString().split(' ')[0].slice(0, 5),
+            endTime: endTime.toTimeString().split(' ')[0].slice(0, 5),
+            duration: Math.round((endTime - sleepSession.startTime) / (1000 * 60))
+        };
+        
+        sleepData.unshift(sleepEntry);
+        localStorage.setItem('sleepData', JSON.stringify(sleepData));
+        
+        sleepSession = null;
+        button.textContent = 'Start Sleep';
+        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 border border-gray-200';
+        
+        updateUI();
+        showMessage('Sleep session saved!');
+    } else {
+        sleepSession = { startTime: new Date() };
+        button.textContent = 'Stop Sleep';
+        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-red-400 border border-gray-200';
+        showMessage('Sleep tracking started!');
+    }
+}
+
+function editBabyProfile() {
+    document.getElementById('profileName').value = babyData.name || '';
+    document.getElementById('profileBirthDate').value = babyData.birthDate || '';
+    document.getElementById('babyProfileModal').classList.remove('hidden');
+}
+
+function editEntry(type, id) {
+    const numericId = parseInt(id);
+    let entry, modalId;
+    
+    switch(type) {
+        case 'growth':
+            entry = growthData.find(item => item.id === numericId);
+            modalId = 'growthModal';
+            if (entry) {
+                document.getElementById('growthDate').value = entry.date;
+                document.getElementById('growthWeight').value = entry.weight;
+                document.getElementById('growthHeight').value = entry.height || '';
+                document.querySelector('#growthModal h3').textContent = 'Edit Growth Entry';
+            }
+            break;
+        case 'feeding':
+            entry = feedingData.find(item => item.id === numericId);
+            modalId = 'feedingModal';
+            if (entry) {
+                document.getElementById('feedingDate').value = entry.date;
+                document.getElementById('feedingTime').value = entry.time;
+                document.getElementById('feedingAmount').value = entry.amount;
+                document.getElementById('feedingType').value = entry.type;
+                document.querySelector('#feedingModal h3').textContent = 'Edit Feeding Entry';
+            }
+            break;
+        case 'diaper':
+            entry = diaperData.find(item => item.id === numericId);
+            modalId = 'diaperModal';
+            if (entry) {
+                document.getElementById('diaperDate').value = entry.date;
+                document.getElementById('diaperTime').value = entry.time;
+                document.getElementById('diaperType').value = entry.type;
+                document.querySelector('#diaperModal h3').textContent = 'Edit Diaper Change';
+            }
+            break;
+        case 'sleep':
+            entry = sleepData.find(item => item.id === numericId);
+            modalId = 'sleepModal';
+            if (entry) {
+                document.getElementById('sleepDate').value = entry.date;
+                document.getElementById('sleepStart').value = entry.startTime;
+                document.getElementById('sleepEnd').value = entry.endTime;
+                document.querySelector('#sleepModal h3').textContent = 'Edit Sleep Entry';
+            }
+            break;
+    }
+    
+    if (entry) {
+        editingEntry = entry;
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+}
+
+function deleteEntry(type, id) {
+    if (!confirm('Delete this entry?')) return;
+    
+    const numericId = parseInt(id);
+    
+    switch(type) {
+        case 'growth':
+            growthData = growthData.filter(item => item.id !== numericId);
+            localStorage.setItem('growthData', JSON.stringify(growthData));
+            break;
+        case 'feeding':
+            feedingData = feedingData.filter(item => item.id !== numericId);
+            localStorage.setItem('feedingData', JSON.stringify(feedingData));
+            break;
+        case 'diaper':
+            diaperData = diaperData.filter(item => item.id !== numericId);
+            localStorage.setItem('diaperData', JSON.stringify(diaperData));
+            break;
+        case 'sleep':
+            sleepData = sleepData.filter(item => item.id !== numericId);
+            localStorage.setItem('sleepData', JSON.stringify(sleepData));
+            break;
+    }
+    
+    updateUI();
+    showMessage('Entry deleted!');
+}
+
+function changeBabyPhoto() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('babyPhoto').src = e.target.result;
+                babyData.photo = e.target.result;
+                localStorage.setItem('babyData', JSON.stringify(babyData));
+                showMessage('Photo updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+    editingEntry = null;
+}
+
+function formatDate(date) {
+    const options = { day: 'numeric', month: 'short' };
+    return date.toLocaleDateString('en-US', options);
+}
+
+function showMessage(message) {
+    const existingMessages = document.querySelectorAll('.bg-green-100');
+    existingMessages.forEach(msg => msg.remove());
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'bg-green-100 text-green-800 p-3 rounded-lg my-3 text-center fixed top-4 left-1/2 transform -translate-x-1/2 z-50 shadow-lg';
+    messageDiv.textContent = message;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 2000);
+}
+    </script>
+</body>
+</html> 
