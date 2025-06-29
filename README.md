@@ -4,16 +4,22 @@ A comprehensive baby tracking application built with HTML, CSS, JavaScript, and 
 
 ## 🌐 Live Demo & Quick Deploy
 
-**🚀 Deploy to Railway (Free)**: 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/VXhiPQ?referralCode=MY_BABY)
+**🎮 PLAY THE APP NOW**: 
+- **GitHub Pages**: [https://kianghod.github.io/my_baby](https://kianghod.github.io/my_baby) 🔥 **INSTANT ACCESS**
+- **Vercel Demo**: [https://my-baby-tracker.vercel.app](https://my-baby-tracker.vercel.app) 
+- **Railway Deploy**: [https://my-baby-production.up.railway.app](https://my-baby-production.up.railway.app)
+- **Render Demo**: [https://my-baby-tracker.onrender.com](https://my-baby-tracker.onrender.com)
+
+**🚀 One-Click Deploy**: 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/VqUtgx)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kianghod/my_baby)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/kianghod/my_baby)
 
 **📦 Alternative Free Deployments**:
-- **Railway**: Click button above for instant deployment
-- **Render**: Available via render.yaml configuration  
-- **Vercel**: Clone repo and connect to Vercel
-- **Heroku**: Push to Heroku with Procfile
-
-**Production URL**: [https://kianghod-my-baby.up.railway.app](https://kianghod-my-baby.up.railway.app)
+- **Railway**: Instant deployment with database support
+- **Render**: Free tier with auto-deployment from GitHub  
+- **Vercel**: Serverless deployment with global CDN
+- **Netlify**: Static + serverless functions
 
 ## 🎯 Multi-User System
 
