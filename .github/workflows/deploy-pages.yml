@@ -36,9 +36,13 @@ jobs:
       - name: Build static version
         run: |
           mkdir -p dist
-          cp public/* dist/ 2>/dev/null || :
+          cp -r public/* dist/ 2>/dev/null || true
           cp index-static.html dist/index.html
-          echo "Baby Tracker - GitHub Pages Demo" > dist/README.md
+          echo "# Baby Tracker - Live Demo" > dist/README.md
+          echo "" >> dist/README.md
+          echo "🎮 **Live Demo**: [https://kianghod.github.io/my_baby](https://kianghod.github.io/my_baby)" >> dist/README.md
+          echo "" >> dist/README.md
+          echo "✨ Features: Multi-user baby tracking with glassmorphism design" >> dist/README.md
           
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -2,24 +2,18 @@
 
 A comprehensive baby tracking application built with HTML, CSS, JavaScript, and Node.js. This app helps parents monitor their baby's daily activities including growth, feeding, diaper changes, and sleep patterns.
 
-## 🌐 Live Demo & Quick Deploy
+## 🌐 Live Demo
 
 **🎮 PLAY THE APP NOW**: 
-- **GitHub Pages**: [https://kianghod.github.io/my_baby](https://kianghod.github.io/my_baby) 🔥 **INSTANT ACCESS**
-- **Vercel Demo**: [https://my-baby-tracker.vercel.app](https://my-baby-tracker.vercel.app) 
-- **Railway Deploy**: [https://my-baby-production.up.railway.app](https://my-baby-production.up.railway.app)
-- **Render Demo**: [https://my-baby-tracker.onrender.com](https://my-baby-tracker.onrender.com)
+**[https://kianghod.github.io/my_baby](https://kianghod.github.io/my_baby)** 🔥 **INSTANT ACCESS**
 
-**🚀 One-Click Deploy**: 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/VqUtgx)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kianghod/my_baby)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/kianghod/my_baby)
-
-**📦 Alternative Free Deployments**:
-- **Railway**: Instant deployment with database support
-- **Render**: Free tier with auto-deployment from GitHub  
-- **Vercel**: Serverless deployment with global CDN
-- **Netlify**: Static + serverless functions
+✨ **Features Available in Live Demo:**
+- 👥 Multi-user system (5 users: Kiang, Aoey, User 3-5)  
+- 📱 Mobile-responsive glassmorphism design
+- 📊 Baby tracking (growth, feeding, diaper, sleep)
+- 📈 Interactive growth charts
+- 💾 Local storage (browser-based data)
+- 📸 Photo upload functionality
 
 ## 🎯 Multi-User System
 
@@ -49,7 +43,7 @@ Each user has completely separate data and can track their own baby independentl
 - **Styling**: Tailwind CSS with glassmorphism design
 - **Icons**: Font Awesome icons
 - **Charts**: Chart.js for growth visualization
-- **Deployment**: Railway, Render, GitHub Actions
+- **Deployment**: GitHub Pages (auto-deploy)
 
 ## Installation
 
@@ -77,35 +71,16 @@ Each user has completely separate data and can track their own baby independentl
 
 5. **Select User**: Choose from 5 available users (Kiang, Aoey, User 3-5) in the dropdown
 
-## 🚀 Deploy to Free Hosting
+## 🎮 How to Use the Live Demo
 
-### Option 1: Railway.app (Recommended - Free)
-1. **Click Deploy Button**: [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/VXhiPQ?referralCode=MY_BABY)
-2. **Connect GitHub**: Connect your GitHub account
-3. **Select Repository**: Choose `kianghod/my_baby`
-4. **Deploy**: Railway will automatically deploy your app
-5. **Get URL**: Your app will be live at `https://your-app.up.railway.app`
+1. **Visit**: [https://kianghod.github.io/my_baby](https://kianghod.github.io/my_baby)
+2. **Select User**: Choose any of the 5 users from the dropdown
+3. **Track Baby Data**: Add feeding, growth, diaper, sleep entries  
+4. **View Charts**: Check growth progress over time
+5. **Upload Photos**: Change baby profile picture
+6. **Multi-Device**: Data saved in browser localStorage
 
-### Option 2: Render.com (Free)
-1. **Sign up**: Create account at [render.com](https://render.com)
-2. **New Web Service**: Click "New" → "Web Service"
-3. **Connect GitHub**: Connect `https://github.com/kianghod/my_baby`
-4. **Configure**: 
-   - Build Command: `npm install`
-   - Start Command: `node server-db.js`
-5. **Deploy**: Click "Create Web Service"
-
-### Option 3: Vercel (Free)
-1. **Import**: Go to [vercel.com](https://vercel.com) → Import Project
-2. **GitHub**: Select `kianghod/my_baby` repository
-3. **Configure**: Vercel will auto-detect settings
-4. **Deploy**: Click "Deploy"
-
-### Option 4: Heroku (Free Tier Ended - Paid)
-1. **Install Heroku CLI**: Download from [heroku.com](https://heroku.com)
-2. **Login**: `heroku login`
-3. **Create App**: `heroku create your-baby-tracker`
-4. **Deploy**: `git push heroku main`
+**💡 Note**: The live demo uses browser localStorage for data persistence. For production use with database backend, you can run the local installation above.
 
 ## Usage
 
@@ -141,21 +116,17 @@ Each user has completely separate data and can track their own baby independentl
 
 ## 🗄️ Data Storage
 
-The application uses **SQLite database** (`baby_tracker.db`) with multi-user support:
+### Live Demo (GitHub Pages):
+- **Storage**: Browser localStorage for client-side data persistence
+- **Multi-User**: 5 separate user profiles (Kiang, Aoey, User 3-5)
+- **Data Types**: Growth, feeding, diaper, sleep tracking
+- **Photos**: Base64 encoded images stored locally
+- **Persistence**: Data saved per browser/device
 
-### Database Schema:
-- **`users`** - User profiles (5 users: Kiang, Aoey, User 3-5)
-- **`baby_profiles`** - Baby information per user
-- **`growth_entries`** - Weight/height measurements per user
-- **`feeding_entries`** - Feeding records per user
-- **`diaper_entries`** - Diaper change logs per user
-- **`sleep_entries`** - Sleep session data per user
-
-### Data Persistence:
-- ✅ **Cross-device synchronization** - Data saved to server database
-- ✅ **User separation** - Each user has completely separate data
-- ✅ **Photo storage** - Base64 encoded images stored in database
-- ✅ **Session persistence** - User selection remembered locally
+### Local Installation (with Database):
+- **Database**: SQLite3 with multi-user support (`baby_tracker.db`)
+- **Cross-device sync**: Server-based data synchronization
+- **Production ready**: Full backend with API endpoints
 
 ## API Endpoints
 
