@@ -88,14 +88,31 @@ function handleUserChange() {
 // Setup event listeners
 function setupEventListeners() {
     // User selector
-    document.getElementById('userSelector').addEventListener('change', handleUserChange);
+    const userSelector = document.getElementById('userSelector');
+    if (userSelector) {
+        userSelector.addEventListener('change', handleUserChange);
+    } else {
+        console.error('User selector not found');
+    }
     
-    // Form submissions
-    document.getElementById('growthForm').addEventListener('submit', handleGrowthSubmit);
-    document.getElementById('feedingForm').addEventListener('submit', handleFeedingSubmit);
-    document.getElementById('diaperForm').addEventListener('submit', handleDiaperSubmit);
-    document.getElementById('sleepForm').addEventListener('submit', handleSleepSubmit);
-    document.getElementById('babyProfileForm').addEventListener('submit', handleBabyProfileSubmit);
+    // Form submissions with error handling
+    const forms = [
+        { id: 'growthForm', handler: handleGrowthSubmit },
+        { id: 'feedingForm', handler: handleFeedingSubmit },
+        { id: 'diaperForm', handler: handleDiaperSubmit },
+        { id: 'sleepForm', handler: handleSleepSubmit },
+        { id: 'babyProfileForm', handler: handleBabyProfileSubmit }
+    ];
+    
+    forms.forEach(({ id, handler }) => {
+        const form = document.getElementById(id);
+        if (form) {
+            form.addEventListener('submit', handler);
+            console.log(`Event listener added for ${id}`);
+        } else {
+            console.error(`Form ${id} not found`);
+        }
+    });
 
     // Close modals when clicking outside
     window.addEventListener('click', function(event) {
@@ -103,18 +120,35 @@ function setupEventListeners() {
             event.target.classList.add('hidden');
         }
     });
+    
+    console.log('All event listeners setup completed');
 }
 
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
     const now = new Date().toTimeString().split(' ')[0].slice(0, 5);
     
-    document.getElementById('growthDate').value = today;
-    document.getElementById('feedingDate').value = today;
-    document.getElementById('feedingTime').value = now;
-    document.getElementById('diaperDate').value = today;
-    document.getElementById('diaperTime').value = now;
-    document.getElementById('sleepDate').value = today;
+    // Growth Modal
+    const growthDate = document.getElementById('growthDate');
+    if (growthDate) growthDate.value = today;
+    
+    // Feeding Modal
+    const feedingDate = document.getElementById('feedingDate');
+    const feedingTime = document.getElementById('feedingTime');
+    if (feedingDate) feedingDate.value = today;
+    if (feedingTime) feedingTime.value = now;
+    
+    // Diaper Modal
+    const diaperDate = document.getElementById('diaperDate');
+    const diaperTime = document.getElementById('diaperTime');
+    if (diaperDate) diaperDate.value = today;
+    if (diaperTime) diaperTime.value = now;
+    
+    // Sleep Modal
+    const sleepDate = document.getElementById('sleepDate');
+    if (sleepDate) sleepDate.value = today;
+    
+    console.log('Default dates set:', { today, now });
 }
 
 // Initialize collapsed sections on load
@@ -594,26 +628,62 @@ function handleBabyProfileSubmit(e) {
 // UI Functions
 function addGrowthEntry() {
     editingEntry = null;
-    document.querySelector('#growthModal h3').textContent = 'Add Growth Entry';
-    document.getElementById('growthForm').reset();
+    const modalTitle = document.querySelector('#growthModal .bg-gradient-to-r h3');
+    if (modalTitle) modalTitle.textContent = 'Add Growth Entry';
+    
+    const form = document.getElementById('growthForm');
+    if (form) form.reset();
+    
     setDefaultDates();
-    document.getElementById('growthModal').classList.remove('hidden');
+    const modal = document.getElementById('growthModal');
+    if (modal) modal.classList.remove('hidden');
+    
+    console.log('Opening Growth Modal');
 }
 
 function addFeedingEntry() {
     editingEntry = null;
-    document.querySelector('#feedingModal h3').textContent = 'Add Feeding Entry';
-    document.getElementById('feedingForm').reset();
+    const modalTitle = document.querySelector('#feedingModal .bg-gradient-to-r h3');
+    if (modalTitle) modalTitle.textContent = 'Add Feeding Entry';
+    
+    const form = document.getElementById('feedingForm');
+    if (form) form.reset();
+    
     setDefaultDates();
-    document.getElementById('feedingModal').classList.remove('hidden');
+    const modal = document.getElementById('feedingModal');
+    if (modal) modal.classList.remove('hidden');
+    
+    console.log('Opening Feeding Modal');
 }
 
 function addDiaperEntry() {
     editingEntry = null;
-    document.querySelector('#diaperModal h3').textContent = 'Add Diaper Change';
-    document.getElementById('diaperForm').reset();
+    const modalTitle = document.querySelector('#diaperModal .bg-gradient-to-r h3');
+    if (modalTitle) modalTitle.textContent = 'Add Diaper Change';
+    
+    const form = document.getElementById('diaperForm');
+    if (form) form.reset();
+    
     setDefaultDates();
-    document.getElementById('diaperModal').classList.remove('hidden');
+    const modal = document.getElementById('diaperModal');
+    if (modal) modal.classList.remove('hidden');
+    
+    console.log('Opening Diaper Modal');
+}
+
+function addSleepEntry() {
+    editingEntry = null;
+    const modalTitle = document.querySelector('#sleepModal .bg-gradient-to-r h3');
+    if (modalTitle) modalTitle.textContent = 'Add Sleep Entry';
+    
+    const form = document.getElementById('sleepForm');
+    if (form) form.reset();
+    
+    setDefaultDates();
+    const modal = document.getElementById('sleepModal');
+    if (modal) modal.classList.remove('hidden');
+    
+    console.log('Opening Sleep Modal');
 }
 
 function toggleSleep() {
@@ -654,55 +724,82 @@ function editBabyProfile() {
 
 function editEntry(type, id) {
     const numericId = parseInt(id);
-    let entry, modalId;
+    let entry, modalId, modalTitle;
     
     switch(type) {
         case 'growth':
             entry = growthData.find(item => item.id === numericId);
             modalId = 'growthModal';
             if (entry) {
-                document.getElementById('growthDate').value = entry.date;
-                document.getElementById('growthWeight').value = entry.weight;
-                document.getElementById('growthHeight').value = entry.height || '';
-                document.querySelector('#growthModal h3').textContent = 'Edit Growth Entry';
+                const growthDate = document.getElementById('growthDate');
+                const growthWeight = document.getElementById('growthWeight');
+                const growthHeight = document.getElementById('growthHeight');
+                
+                if (growthDate) growthDate.value = entry.date;
+                if (growthWeight) growthWeight.value = entry.weight;
+                if (growthHeight) growthHeight.value = entry.height || '';
+                
+                modalTitle = document.querySelector('#growthModal .bg-gradient-to-r h3');
+                if (modalTitle) modalTitle.textContent = 'Edit Growth Entry';
             }
             break;
         case 'feeding':
             entry = feedingData.find(item => item.id === numericId);
             modalId = 'feedingModal';
             if (entry) {
-                document.getElementById('feedingDate').value = entry.date;
-                document.getElementById('feedingTime').value = entry.time;
-                document.getElementById('feedingAmount').value = entry.amount;
-                document.getElementById('feedingType').value = entry.type;
-                document.querySelector('#feedingModal h3').textContent = 'Edit Feeding Entry';
+                const feedingDate = document.getElementById('feedingDate');
+                const feedingTime = document.getElementById('feedingTime');
+                const feedingAmount = document.getElementById('feedingAmount');
+                const feedingType = document.getElementById('feedingType');
+                
+                if (feedingDate) feedingDate.value = entry.date;
+                if (feedingTime) feedingTime.value = entry.time;
+                if (feedingAmount) feedingAmount.value = entry.amount;
+                if (feedingType) feedingType.value = entry.type;
+                
+                modalTitle = document.querySelector('#feedingModal .bg-gradient-to-r h3');
+                if (modalTitle) modalTitle.textContent = 'Edit Feeding Entry';
             }
             break;
         case 'diaper':
             entry = diaperData.find(item => item.id === numericId);
             modalId = 'diaperModal';
             if (entry) {
-                document.getElementById('diaperDate').value = entry.date;
-                document.getElementById('diaperTime').value = entry.time;
-                document.getElementById('diaperType').value = entry.type;
-                document.querySelector('#diaperModal h3').textContent = 'Edit Diaper Change';
+                const diaperDate = document.getElementById('diaperDate');
+                const diaperTime = document.getElementById('diaperTime');
+                const diaperType = document.getElementById('diaperType');
+                
+                if (diaperDate) diaperDate.value = entry.date;
+                if (diaperTime) diaperTime.value = entry.time;
+                if (diaperType) diaperType.value = entry.type;
+                
+                modalTitle = document.querySelector('#diaperModal .bg-gradient-to-r h3');
+                if (modalTitle) modalTitle.textContent = 'Edit Diaper Change';
             }
             break;
         case 'sleep':
             entry = sleepData.find(item => item.id === numericId);
             modalId = 'sleepModal';
             if (entry) {
-                document.getElementById('sleepDate').value = entry.date;
-                document.getElementById('sleepStart').value = entry.startTime;
-                document.getElementById('sleepEnd').value = entry.endTime;
-                document.querySelector('#sleepModal h3').textContent = 'Edit Sleep Entry';
+                const sleepDate = document.getElementById('sleepDate');
+                const sleepStart = document.getElementById('sleepStart');
+                const sleepEnd = document.getElementById('sleepEnd');
+                
+                if (sleepDate) sleepDate.value = entry.date;
+                if (sleepStart) sleepStart.value = entry.startTime;
+                if (sleepEnd) sleepEnd.value = entry.endTime;
+                
+                modalTitle = document.querySelector('#sleepModal .bg-gradient-to-r h3');
+                if (modalTitle) modalTitle.textContent = 'Edit Sleep Entry';
             }
             break;
     }
     
     if (entry) {
         editingEntry = entry;
-        document.getElementById(modalId).classList.remove('hidden');
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.remove('hidden');
+        console.log(`Editing ${type} entry:`, entry);
     }
 }
 
