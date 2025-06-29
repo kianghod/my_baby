@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="#FF8A9B"/>
+  
+  <!-- Main baby head -->
+  <circle cx="90" cy="85" r="35" fill="#FFD4A3"/>
+  
+  <!-- Baby hair -->
+  <path d="M55 55 Q90 45 125 55 Q120 50 115 50 Q105 45 90 45 Q75 45 65 50 Q60 50 55 55" fill="#8B4513"/>
+  
+  <!-- Baby eyes -->
+  <circle cx="78" cy="78" r="4" fill="#333"/>
+  <circle cx="102" cy="78" r="4" fill="#333"/>
+  <circle cx="79.5" cy="76.5" r="1.5" fill="#FFF"/>
+  <circle cx="103.5" cy="76.5" r="1.5" fill="#FFF"/>
+  
+  <!-- Baby nose -->
+  <circle cx="90" cy="85" r="1.5" fill="#FFB366"/>
+  
+  <!-- Baby mouth -->
+  <path d="M82 95 Q90 100 98 95" stroke="#FF6B9D" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <!-- Baby cheeks -->
+  <circle cx="68" cy="88" r="6" fill="#FFB366" opacity="0.4"/>
+  <circle cx="112" cy="88" r="6" fill="#FFB366" opacity="0.4"/>
+  
+  <!-- Decorative elements -->
+  <path d="M50 140 C50 135, 55 130, 60 135 C65 130, 70 135, 70 140 C70 145, 60 155, 60 155 C60 155, 50 145, 50 140 Z" fill="#FFF" opacity="0.8"/>
+  <path d="M110 140 C110 135, 115 130, 120 135 C125 130, 130 135, 130 140 C130 145, 120 155, 120 155 C120 155, 110 145, 110 140 Z" fill="#FFF" opacity="0.8"/>
+</svg> 

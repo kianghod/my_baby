@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Tracker</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon-simple.svg">
+    <link rel="alternate icon" href="/favicon.svg">
+    <link rel="mask-icon" href="/favicon.svg" color="#FF8A9B">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.svg">
+    <meta name="theme-color" content="#FF8A9B">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    backdropBlur: {
+                        xs: '2px',
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-gray-100 font-poppins">
+    <div class="max-w-sm mx-auto bg-white overflow-hidden border border-gray-200 shadow-lg">
+        <!-- Header with Baby Info -->
+        <header class="px-6 py-8 relative bg-gray-50 border-b border-gray-200">
+            <div class="flex items-start mb-4">
+                <div class="w-20 h-20 rounded-full overflow-hidden mr-4 border-3 border-white shadow-lg cursor-pointer hover:opacity-75 transition-opacity" onclick="changeBabyPhoto()">
+                    <img id="babyPhoto" src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80" alt="Baby Tommy" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <h1 id="babyName" class="text-2xl font-bold mb-1 text-gray-800">Tommy</h1>
+                    <p id="babyDate" class="text-sm font-medium text-gray-700">23 Sep 2023</p>
+                    <p id="babyAge" class="text-sm text-gray-600">(2m 3d)</p>
+                </div>
+                <button class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-all duration-300 hover:scale-110 flex items-center justify-center border border-gray-200" onclick="editBabyProfile()">
+                    <i class="fas fa-edit text-gray-700"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Enhanced Statistics Dashboard -->
+        <div class="px-6 pb-6 pt-4 bg-gray-50 border-b border-gray-200">
+            <div class="text-center mb-4">
+                <h3 class="text-base font-semibold text-gray-800 mb-1">Daily Summary</h3>
+                <p class="text-xs text-gray-600">Today's key metrics at a glance</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <!-- Primary Weight Card -->
+                <div class="col-span-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-center shadow-sm">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <i class="fas fa-weight-hanging text-blue-500 text-sm"></i>
+                        <span class="text-xs font-medium text-gray-700">Current Weight</span>
+                    </div>
+                    <div id="latestWeight" class="text-2xl font-bold text-gray-800 mb-1">--</div>
+                    <div class="text-xs text-gray-600">kg</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-4 gap-3">
+                <!-- Feeding Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-blue-500 text-xs mb-1">
+                        <i class="fas fa-bottle-water"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="todayFeeding">0</div>
+                    <div class="text-xs text-gray-600">Oz</div>
+                </div>
+                
+                <!-- Days Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-green-500 text-xs mb-1">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="daysOld">0</div>
+                    <div class="text-xs text-gray-600">Days</div>
+                </div>
+                
+                <!-- Diaper Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-pink-500 text-xs mb-1">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="todayDiapers">0/0</div>
+                    <div class="text-xs text-gray-600">P/P</div>
+                </div>
+                
+                <!-- Sleep Stats -->
+                <div class="bg-white border border-gray-200 rounded-xl px-2 py-3 text-center hover:bg-gray-50 transition-all shadow-sm">
+                    <div class="text-purple-500 text-xs mb-1">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="text-sm font-bold text-gray-800" id="todaySleep">0h</div>
+                    <div class="text-xs text-gray-600">Sleep</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Sections -->
+        <main class="px-6 pb-6 bg-white">
+            <!-- Growth Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-green-500">
+                        <i class="fas fa-ruler-vertical"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Growth</h2>
+                        <p id="growthSubtitle" class="text-sm text-gray-600">4.4 kg</p>
+                    </div>
+                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-xl text-sm mr-3 transition-all border border-gray-200" onclick="openGrowthChart()">
+                        <i class="fas fa-chart-line mr-1"></i>Chart
+                    </button>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-green-300 border border-gray-200" onclick="addGrowthEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('growth')">
+                        <i class="fas fa-chevron-down" id="growthChevron"></i>
+                    </button>
+                </div>
+                <div class="p-4" id="growthContent">
+                    <div class="grid grid-cols-3 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Date</span>
+                        <span>Weight</span>
+                        <span>Height</span>
+                    </div>
+                    <div id="growthList"></div>
+                </div>
+            </section>
+
+            <!-- Milk Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-blue-500">
+                        <i class="fas fa-bottle-water"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Milk</h2>
+                        <p id="milkSubtitle" class="text-sm text-gray-600">Already drink for 1 day</p>
+                    </div>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-blue-300 border border-gray-200" onclick="addFeedingEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('milk')">
+                        <i class="fas fa-chevron-down" id="milkChevron"></i>
+                    </button>
+                </div>
+                <div class="px-4 py-3 bg-blue-50 border-b border-gray-200">
+                    <div class="text-sm text-center text-gray-700">Total Drink <span id="totalMilk" class="font-bold text-gray-800">968 Oz</span></div>
+                </div>
+                <div class="p-4" id="milkContent">
+                    <div class="grid grid-cols-2 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Time</span>
+                        <span>(Ounces)</span>
+                    </div>
+                    <div id="feedingList"></div>
+                </div>
+            </section>
+
+            <!-- Feeding Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-orange-500">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Feeding</h2>
+                        <p id="feedingSubtitle" class="text-sm text-gray-600">Every 2 hours - Next 23:00</p>
+                    </div>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-orange-300 border border-gray-200" onclick="addFeedingEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('feeding')">
+                        <i class="fas fa-chevron-down" id="feedingChevron"></i>
+                    </button>
+                </div>
+                <div class="p-4" id="feedingContent">
+                    <div class="grid grid-cols-2 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Feeding/time</span>
+                        <span>(Ounces)</span>
+                    </div>
+                    <div id="feedingDetailList"></div>
+                </div>
+            </section>
+
+            <!-- Pee/Poo Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-pink-500">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Pee/Poo</h2>
+                        <p id="diaperSubtitle" class="text-sm text-gray-600">Average 3 pee 2 poo 1 day</p>
+                    </div>
+                    <button class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-pink-300 border border-gray-200" onclick="addDiaperEntry()">+Add</button>
+                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('diaper')">
+                        <i class="fas fa-chevron-down" id="diaperChevron"></i>
+                    </button>
+                </div>
+                <div class="p-4" id="diaperContent">
+                    <div class="grid grid-cols-3 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Date</span>
+                        <span>Time</span>
+                        <span>Type</span>
+                    </div>
+                    <div id="diaperList"></div>
+                </div>
+            </section>
+
+            <!-- Sleep Section -->
+            <section class="rounded-xl mb-3 overflow-hidden bg-white border border-gray-200 shadow-sm">
+                <div class="px-4 py-4 flex items-center bg-gray-50 border-b border-gray-200">
+                    <div class="text-xl mr-3 text-purple-500">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800">Sleep</h2>
+                        <p id="sleepSubtitle" class="text-sm text-gray-600">Avg 8 hour sleep / day</p>
+                    </div>
+                    <button id="sleepToggleBtn" class="text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 border border-gray-200" onclick="toggleSleep()">Start Sleep</button>
+                    <button class="w-8 h-8 ml-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm transition-all border border-gray-200" onclick="toggleSection('sleep')">
+                        <i class="fas fa-chevron-down" id="sleepChevron"></i>
+                    </button>
+                </div>
+                <div class="p-4" id="sleepContent">
+                    <div class="grid grid-cols-3 gap-3 text-xs font-semibold mb-2 text-gray-700">
+                        <span>Today</span>
+                        <span>Sleep</span>
+                        <span>Awake</span>
+                    </div>
+                    <div id="sleepList"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="growthModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-xl text-center font-semibold text-gray-800">Add Growth Entry</h3>
+            <form id="growthForm" class="flex flex-col gap-3">
+                <input type="date" id="growthDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="number" id="growthWeight" placeholder="Weight (kg)" step="0.1" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="number" id="growthHeight" placeholder="Height (cm)" step="0.1" class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('growthModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-green-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="feedingModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Add Feeding Entry</h3>
+            <form id="feedingForm" class="flex flex-col gap-3">
+                <input type="date" id="feedingDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="time" id="feedingTime" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="number" id="feedingAmount" placeholder="Amount (oz)" step="0.1" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <select id="feedingType" class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 focus:border-gray-500">
+                    <option value="bottle">Bottle</option>
+                    <option value="breast">Breast</option>
+                </select>
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('feedingModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-blue-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="diaperModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Add Diaper Change</h3>
+            <form id="diaperForm" class="flex flex-col gap-3">
+                <input type="date" id="diaperDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="time" id="diaperTime" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <select id="diaperType" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 focus:border-gray-500">
+                    <option value="pee">Pee</option>
+                    <option value="poo">Poo</option>
+                    <option value="both">Both</option>
+                </select>
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('diaperModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-pink-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="sleepModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Add Sleep Entry</h3>
+            <form id="sleepForm" class="flex flex-col gap-3">
+                <input type="date" id="sleepDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="time" id="sleepStart" placeholder="Start Time" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="time" id="sleepEnd" placeholder="End Time" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('sleepModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-purple-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="babyProfileModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-32 p-8 rounded-xl w-11/12 max-w-md transform -translate-y-8 shadow-lg">
+            <h3 class="mb-5 text-gray-800 text-xl text-center font-semibold">Edit Baby Profile</h3>
+            <form id="babyProfileForm" class="flex flex-col gap-3">
+                <input type="text" id="profileName" placeholder="Baby's Name" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <input type="date" id="profileBirthDate" required class="p-3 border rounded-xl text-base outline-none transition-colors bg-white border-gray-200 text-gray-800 placeholder-gray-600 focus:border-gray-500">
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="closeModal('babyProfileModal')" class="flex-1 p-3 rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-gray-100 border border-gray-300 text-gray-700">Cancel</button>
+                    <button type="submit" class="flex-1 p-3 text-white rounded-xl text-base font-medium transition-transform hover:-translate-y-0.5 bg-pink-300 border border-gray-200">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Growth Chart Modal -->
+    <div id="growthChartModal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+        <div class="bg-white border border-gray-200 mx-auto mt-20 p-6 rounded-xl w-11/12 max-w-4xl shadow-lg transform -translate-y-8 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-gray-800 text-2xl font-semibold">
+                    <i class="fas fa-chart-line text-green-500 mr-2"></i>Growth Chart
+                </h3>
+                <button onclick="closeModal('growthChartModal')" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-gray-700"></i>
+                </button>
+            </div>
+            
+            <!-- Chart Toggle Buttons -->
+            <div class="flex gap-2 mb-6 justify-center">
+                <button id="weightChartBtn" class="px-4 py-2 bg-green-300 text-white rounded-xl text-sm font-medium transition-all border border-gray-200" onclick="showWeightChart()">
+                    <i class="fas fa-weight mr-2"></i>Weight
+                </button>
+                <button id="heightChartBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium transition-all border border-gray-200" onclick="showHeightChart()">
+                    <i class="fas fa-ruler-vertical mr-2"></i>Height
+                </button>
+                <button id="bothChartBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium transition-all border border-gray-200" onclick="showBothCharts()">
+                    <i class="fas fa-chart-bar mr-2"></i>Both
+                </button>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                <canvas id="growthChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Chart Stats -->
+            <div id="chartStats" class="grid grid-cols-2 gap-4 text-sm">
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl">
+                    <div class="text-gray-700 font-medium">Latest Weight</div>
+                    <div id="latestWeightStat" class="text-gray-800 font-bold text-lg">--</div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl">
+                    <div class="text-gray-700 font-medium">Latest Height</div>
+                    <div id="latestHeightStat" class="text-gray-800 font-bold text-lg">--</div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl">
+                    <div class="text-gray-700 font-medium">Weight Gain</div>
+                    <div id="weightGainStat" class="text-gray-800 font-bold text-lg">--</div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl">
+                    <div class="text-gray-700 font-medium">Height Growth</div>
+                    <div id="heightGrowthStat" class="text-gray-800 font-bold text-lg">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

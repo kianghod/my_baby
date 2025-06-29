@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <!-- Background circle for baby icon -->
+  <circle cx="30" cy="30" r="25" fill="#FF8A9B" opacity="0.1"/>
+  
+  <!-- Baby head -->
+  <circle cx="30" cy="28" r="12" fill="#FFD4A3"/>
+  
+  <!-- Baby hair -->
+  <path d="M18 20 Q30 15 42 20 Q40 18 38 18 Q34 16 30 16 Q26 16 22 18 Q20 18 18 20" fill="#8B4513"/>
+  
+  <!-- Baby eyes -->
+  <circle cx="25" cy="26" r="1.5" fill="#333"/>
+  <circle cx="35" cy="26" r="1.5" fill="#333"/>
+  <circle cx="25.5" cy="25.5" r="0.5" fill="#FFF"/>
+  <circle cx="35.5" cy="25.5" r="0.5" fill="#FFF"/>
+  
+  <!-- Baby nose -->
+  <circle cx="30" cy="29" r="0.5" fill="#FFB366"/>
+  
+  <!-- Baby mouth -->
+  <path d="M27 32 Q30 34 33 32" stroke="#FF6B9D" stroke-width="1" fill="none" stroke-linecap="round"/>
+  
+  <!-- Baby cheeks -->
+  <circle cx="22" cy="30" r="2" fill="#FFB366" opacity="0.3"/>
+  <circle cx="38" cy="30" r="2" fill="#FFB366" opacity="0.3"/>
+  
+  <!-- App Name -->
+  <text x="70" y="25" font-family="Poppins, sans-serif" font-size="18" font-weight="700" fill="#2D3748">Baby</text>
+  <text x="70" y="45" font-family="Poppins, sans-serif" font-size="18" font-weight="700" fill="#4299E1">Tracker</text>
+  
+  <!-- Decorative hearts -->
+  <path d="M160 15 C160 12, 163 10, 166 12 C169 10, 172 12, 172 15 C172 18, 166 22, 166 22 C166 22, 160 18, 160 15 Z" fill="#FF8A9B" opacity="0.6"/>
+  <path d="M175 35 C175 33, 177 32, 179 33 C181 32, 183 33, 183 35 C183 37, 179 40, 179 40 C179 40, 175 37, 175 35 Z" fill="#4299E1" opacity="0.6"/>
+</svg> 
