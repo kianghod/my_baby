@@ -377,11 +377,34 @@ function updateSleepList() {
 // Form handlers
 function handleGrowthSubmit(e) {
     e.preventDefault();
+    
+    // Validation
+    const date = document.getElementById('growthDate').value;
+    const weight = parseFloat(document.getElementById('growthWeight').value);
+    const height = parseFloat(document.getElementById('growthHeight').value) || null;
+    
+    if (!date) {
+        showMessage('Please select a date', 'error');
+        return;
+    }
+    
+    if (!weight || weight <= 0 || weight > 50) {
+        showMessage('Please enter a valid weight (0-50 kg)', 'error');
+        return;
+    }
+    
+    if (height && (height <= 0 || height > 200)) {
+        showMessage('Please enter a valid height (0-200 cm)', 'error');
+        return;
+    }
+    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
-        date: document.getElementById('growthDate').value,
-        weight: parseFloat(document.getElementById('growthWeight').value),
-        height: parseFloat(document.getElementById('growthHeight').value) || null
+        date: date,
+        weight: weight,
+        height: height,
+        created_at: editingEntry ? editingEntry.created_at : new Date().toISOString(),
+        updated_at: new Date().toISOString()
     };
     
     if (editingEntry) {
@@ -402,12 +425,36 @@ function handleGrowthSubmit(e) {
 
 function handleFeedingSubmit(e) {
     e.preventDefault();
+    
+    // Validation
+    const date = document.getElementById('feedingDate').value;
+    const time = document.getElementById('feedingTime').value;
+    const amount = parseFloat(document.getElementById('feedingAmount').value);
+    const type = document.getElementById('feedingType').value;
+    
+    if (!date) {
+        showMessage('Please select a date', 'error');
+        return;
+    }
+    
+    if (!time) {
+        showMessage('Please select a time', 'error');
+        return;
+    }
+    
+    if (!amount || amount <= 0 || amount > 1000) {
+        showMessage('Please enter a valid amount (0-1000 oz)', 'error');
+        return;
+    }
+    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
-        date: document.getElementById('feedingDate').value,
-        time: document.getElementById('feedingTime').value,
-        amount: parseFloat(document.getElementById('feedingAmount').value),
-        type: document.getElementById('feedingType').value
+        date: date,
+        time: time,
+        amount: amount,
+        type: type,
+        created_at: editingEntry ? editingEntry.created_at : new Date().toISOString(),
+        updated_at: new Date().toISOString()
     };
     
     if (editingEntry) {
@@ -428,11 +475,34 @@ function handleFeedingSubmit(e) {
 
 function handleDiaperSubmit(e) {
     e.preventDefault();
+    
+    // Validation
+    const date = document.getElementById('diaperDate').value;
+    const time = document.getElementById('diaperTime').value;
+    const type = document.getElementById('diaperType').value;
+    
+    if (!date) {
+        showMessage('Please select a date', 'error');
+        return;
+    }
+    
+    if (!time) {
+        showMessage('Please select a time', 'error');
+        return;
+    }
+    
+    if (!type) {
+        showMessage('Please select a diaper type', 'error');
+        return;
+    }
+    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
-        date: document.getElementById('diaperDate').value,
-        time: document.getElementById('diaperTime').value,
-        type: document.getElementById('diaperType').value
+        date: date,
+        time: time,
+        type: type,
+        created_at: editingEntry ? editingEntry.created_at : new Date().toISOString(),
+        updated_at: new Date().toISOString()
     };
     
     if (editingEntry) {
@@ -453,8 +523,26 @@ function handleDiaperSubmit(e) {
 
 function handleSleepSubmit(e) {
     e.preventDefault();
+    
+    // Validation
+    const date = document.getElementById('sleepDate').value;
     const startTime = document.getElementById('sleepStart').value;
     const endTime = document.getElementById('sleepEnd').value;
+    
+    if (!date) {
+        showMessage('Please select a date', 'error');
+        return;
+    }
+    
+    if (!startTime) {
+        showMessage('Please select a start time', 'error');
+        return;
+    }
+    
+    if (!endTime) {
+        showMessage('Please select an end time', 'error');
+        return;
+    }
     
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
@@ -462,12 +550,19 @@ function handleSleepSubmit(e) {
     
     if (duration <= 0) duration += 24 * 60;
     
+    if (duration > 24 * 60) {
+        showMessage('Sleep duration cannot exceed 24 hours', 'error');
+        return;
+    }
+    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
-        date: document.getElementById('sleepDate').value,
+        date: date,
         startTime: startTime,
         endTime: endTime,
-        duration: duration
+        duration: duration,
+        created_at: editingEntry ? editingEntry.created_at : new Date().toISOString(),
+        updated_at: new Date().toISOString()
     };
     
     if (editingEntry) {
@@ -539,14 +634,14 @@ function toggleSleep() {
         
         sleepSession = null;
         button.textContent = 'Start Sleep';
-        button.className = 'bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all';
+        button.className = 'bg-white border border-[#F4F4F4] hover:border-gray-200 text-gray-700 px-3 py-1 rounded-xl text-sm transition-all';
         
         updateUI();
         showMessage('Sleep session saved!');
     } else {
         sleepSession = { startTime: new Date() };
         button.textContent = 'Stop Sleep';
-        button.className = 'bg-white border-2 border-red-300 hover:border-red-400 text-red-700 px-3 py-1 rounded-xl text-sm transition-all';
+        button.className = 'bg-white border border-red-300 hover:border-red-400 text-red-700 px-3 py-1 rounded-xl text-sm transition-all';
         showMessage('Sleep tracking started!');
     }
 }
@@ -780,13 +875,13 @@ function updateChartButtons() {
     const buttons = ['weightChartBtn', 'heightChartBtn', 'bothChartBtn'];
     buttons.forEach(btnId => {
         const btn = document.getElementById(btnId);
-        btn.className = 'px-4 py-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-xl text-sm font-medium transition-all';
+        btn.className = 'px-4 py-2 bg-white border border-[#F4F4F4] hover:border-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all';
     });
     
     // Highlight active button with darker border
     const activeButton = document.getElementById(currentChartType === 'weight' ? 'weightChartBtn' : 
                                                currentChartType === 'height' ? 'heightChartBtn' : 'bothChartBtn');
-    activeButton.className = 'px-4 py-2 bg-white border-2 border-gray-600 text-gray-800 rounded-xl text-sm font-medium transition-all';
+    activeButton.className = 'px-4 py-2 bg-white border border-gray-600 text-gray-800 rounded-xl text-sm font-medium transition-all';
 }
 
 function createGrowthChart() {
