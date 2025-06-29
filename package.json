@@ -7,7 +7,10 @@
     "start": "node server-db.js",
     "dev": "nodemon server-db.js",
     "build": "mkdir -p dist && cp -r public/* dist/ && cp index-static.html dist/index.html",
-    "pages": "npm run build && echo 'GitHub Pages build ready'"
+    "pages": "npm run build && echo 'GitHub Pages build ready'",
+    "serve": "python3 -m http.server 8000",
+    "open": "open index.html",
+    "open-static": "open index-static.html"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
