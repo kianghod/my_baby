@@ -1,16 +1,18 @@
-// Baby Tracker - Offline Version with localStorage
-// Matches all features from the database version
+// Baby Tracker - Complete Offline Version with localStorage
+// Full feature parity with database version
 
 // Global state
+let currentUserId = null;
+let users = [];
 let babyData = {};
 let growthData = [];
 let feedingData = [];
-let diaperData = [];  
+let diaperData = [];
 let sleepData = [];
 let growthChart = null;
 let currentChartType = 'weight';
-let users = [];
-let currentUserId = null;
+let editingEntry = null;
+let sleepSession = null;
 
 // Collapse/expand state for sections - Default all sections collapsed
 let collapsedSections = {
@@ -21,17 +23,13 @@ let collapsedSections = {
     sleep: true
 };
 
-// Variables for edit mode
-let editingEntry = null;
-let editingType = null;
-let sleepSession = null;
-
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
     initializeUsers();
     setupEventListeners();
     setDefaultDates();
     loadAllData();
+    initializeCollapsedSections();
 });
 
 // Initialize default users
@@ -119,6 +117,22 @@ function setDefaultDates() {
     document.getElementById('sleepDate').value = today;
 }
 
+// Initialize collapsed sections on load
+function initializeCollapsedSections() {
+    // Set all sections to collapsed by default
+    Object.keys(collapsedSections).forEach(sectionName => {
+        if (collapsedSections[sectionName]) {
+            const content = document.getElementById(sectionName + 'Content');
+            const chevron = document.getElementById(sectionName + 'Chevron');
+            
+            if (content && chevron) {
+                content.style.display = 'none';
+                chevron.className = 'fas fa-chevron-right';
+            }
+        }
+    });
+}
+
 // Load all data from localStorage
 function loadAllData() {
     try {
@@ -131,7 +145,7 @@ function loadAllData() {
         updateUI();
     } catch (error) {
         console.error('Error loading data:', error);
-        showError('Failed to load data');
+        showMessage('Failed to load data', 'error');
     }
 }
 
@@ -192,172 +206,142 @@ function saveSleepData() {
     localStorage.setItem(key, JSON.stringify(sleepData));
 }
 
-function calculateStats() {
-    // Calculate feeding stats
-    const today = new Date().toDateString();
-    const todayFeedings = feedingData.filter(f => new Date(f.date).toDateString() === today);
-    const totalToday = todayFeedings.reduce((sum, f) => sum + f.amount, 0);
-    
-    // Calculate diaper stats
-    const todayDiapers = diaperData.filter(d => new Date(d.date).toDateString() === today);
-    const peeCount = todayDiapers.filter(d => d.type === 'pee' || d.type === 'both').length;
-    const pooCount = todayDiapers.filter(d => d.type === 'poo' || d.type === 'both').length;
-    
-    // Calculate sleep stats
-    const todaySleep = sleepData.filter(s => new Date(s.date).toDateString() === today);
-    const totalMinutes = todaySleep.reduce((sum, s) => sum + s.duration, 0);
-    
-    stats = {
-        feeding: {
-            todayTotal: totalToday,
-            todayCount: todayFeedings.length
-        },
-        diaper: {
-            todayTotal: todayDiapers.length,
-            peeCount,
-            pooCount
-        },
-        sleep: {
-            todayTotal: totalMinutes,
-            sessionCount: todaySleep.length
-        }
-    };
-}
-
+// Update UI functions
 function updateUI() {
     updateBabyProfile();
+    updateSummaryDashboard();
     updateGrowthList();
     updateFeedingList();
     updateDiaperList();
     updateSleepList();
-    updateSummaryDashboard();
     updateSectionSubtitles();
 }
 
 function updateBabyProfile() {
-    document.getElementById('babyName').textContent = babyData.name || 'Baby';
+    const nameElement = document.getElementById('babyName');
+    const ageElement = document.getElementById('babyAge');
+    const photoElement = document.getElementById('babyPhoto');
     
-    if (babyData.birthDate) {
-        const age = calculateAge(babyData.birthDate);
-        document.getElementById('babyAge').textContent = `${age.months} months ${age.days} days old`;
+    if (nameElement) nameElement.textContent = babyData.name || 'Baby';
+    
+    if (ageElement && babyData.birth_date) {
+        const age = calculateAge(babyData.birth_date);
+        ageElement.textContent = `${age.months} months ${age.days} days`;
     }
     
-    if (babyData.photo) {
-        document.getElementById('babyPhoto').src = babyData.photo;
+    if (photoElement && babyData.photo) {
+        photoElement.src = babyData.photo;
     }
 }
 
 function calculateAge(birthDate) {
     const birth = new Date(birthDate);
-    const now = new Date();
-    const diffTime = Math.abs(now - birth);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const today = new Date();
+    const diffTime = Math.abs(today - birth);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const months = Math.floor(diffDays / 30);
     const days = diffDays % 30;
-    return { months, days, totalDays: diffDays };
+    return { months, days };
 }
 
 function updateSummaryDashboard() {
-    // Weight
+    // Update latest weight
     if (growthData.length > 0) {
         const latest = growthData.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-        document.getElementById('latestWeight').textContent = latest.weight + ' kg';
-    } else {
-        document.getElementById('latestWeight').textContent = '0 kg';
+        document.getElementById('latestWeight').textContent = latest.weight + 'kg';
     }
     
-    // Feeding
+    // Update total milk
     const totalMilk = feedingData.reduce((sum, f) => sum + f.amount, 0);
-    document.getElementById('totalMilk').textContent = totalMilk + ' oz';
-    document.getElementById('todayFeedings').textContent = stats.feeding?.todayCount || 0;
+    document.getElementById('totalMilk').textContent = totalMilk + 'oz';
     
-    // Diapers
-    document.getElementById('todayDiapers').textContent = `${stats.diaper?.peeCount || 0}/${stats.diaper?.pooCount || 0}`;
+    // Update today's stats
+    const today = new Date().toDateString();
+    const todayFeedings = feedingData.filter(f => new Date(f.date).toDateString() === today);
+    document.getElementById('todayFeedings').textContent = todayFeedings.length;
     
-    // Sleep
-    const sleepHours = Math.round((stats.sleep?.todayTotal || 0) / 60);
-    document.getElementById('todaySleep').textContent = sleepHours + 'h';
+    const todayDiapers = diaperData.filter(d => new Date(d.date).toDateString() === today);
+    const peeCount = todayDiapers.filter(d => d.type === 'pee' || d.type === 'both').length;
+    const pooCount = todayDiapers.filter(d => d.type === 'poo' || d.type === 'both').length;
+    document.getElementById('todayDiapers').textContent = `${peeCount}/${pooCount}`;
+    
+    const todaySleep = sleepData.filter(s => new Date(s.date).toDateString() === today);
+    const totalMinutes = todaySleep.reduce((sum, s) => sum + s.duration, 0);
+    document.getElementById('todaySleep').textContent = Math.round(totalMinutes / 60) + 'h';
 }
 
 function updateGrowthList() {
-    const growthList = document.getElementById('growthList');
-    
+    const list = document.getElementById('growthList');
     if (growthData.length === 0) {
-        growthList.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500"><div class="text-base">No growth entries yet</div></div>';
+        list.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No growth entries yet</div>';
         return;
     }
-
-    const sortedGrowth = growthData.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    growthList.innerHTML = sortedGrowth.map(entry => `
+    const sorted = growthData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
         <div class="grid grid-cols-3 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('growth', ${entry.id})">
             <span class="text-xs">${formatDate(new Date(entry.date))}</span>
             <span>${entry.weight}kg</span>
-            <span>${entry.height || '28'}cm</span>
+            <span>${entry.height || '-'}cm</span>
             <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('growth', ${entry.id})" title="Delete">×</button>
         </div>
     `).join('');
 }
 
 function updateFeedingList() {
-    const feedingList = document.getElementById('feedingList');
-    const feedingDetailList = document.getElementById('feedingDetailList');
+    const list = document.getElementById('feedingList');
+    const detailList = document.getElementById('feedingDetailList');
+    const emptyMessage = '<div class="col-span-2 text-center py-10 text-gray-500">No feeding entries yet</div>';
     
     if (feedingData.length === 0) {
-        const emptyState = '<div class="col-span-2 text-center py-10 text-gray-500"><div class="text-base">No feeding entries yet</div></div>';
-        feedingList.innerHTML = emptyState;
-        feedingDetailList.innerHTML = emptyState;
+        if (list) list.innerHTML = emptyMessage;
+        if (detailList) detailList.innerHTML = emptyMessage;
         return;
     }
-
-    const sortedFeeding = feedingData.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    const feedingHTML = sortedFeeding.map(entry => `
+    const sorted = feedingData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const feedingHTML = sorted.map(entry => `
         <div class="grid grid-cols-2 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('feeding', ${entry.id})">
             <span>${entry.time}</span>
-            <span>${entry.amount}</span>
+            <span>${entry.amount}oz</span>
             <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('feeding', ${entry.id})" title="Delete">×</button>
         </div>
     `).join('');
-
-    feedingList.innerHTML = feedingHTML;
-    feedingDetailList.innerHTML = feedingHTML;
+    
+    if (list) list.innerHTML = feedingHTML;
+    if (detailList) detailList.innerHTML = feedingHTML;
 }
 
 function updateDiaperList() {
-    const diaperList = document.getElementById('diaperList');
-    
+    const list = document.getElementById('diaperList');
     if (diaperData.length === 0) {
-        diaperList.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500"><div class="text-base">No diaper entries yet</div></div>';
+        list.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No diaper entries yet</div>';
         return;
     }
-
-    const sortedDiaper = diaperData.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    diaperList.innerHTML = sortedDiaper.map(entry => `
+    const sorted = diaperData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
         <div class="grid grid-cols-3 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('diaper', ${entry.id})">
             <span class="text-xs">${formatDate(new Date(entry.date))}</span>
             <span>${entry.time}</span>
-            <span>${capitalizeFirst(entry.type)}</span>
+            <span>${entry.type.charAt(0).toUpperCase() + entry.type.slice(1)}</span>
             <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('diaper', ${entry.id})" title="Delete">×</button>
         </div>
     `).join('');
 }
 
 function updateSleepList() {
-    const sleepList = document.getElementById('sleepList');
-    
+    const list = document.getElementById('sleepList');
     if (sleepData.length === 0) {
-        sleepList.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500"><div class="text-base">No sleep entries yet</div></div>';
+        list.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">No sleep entries yet</div>';
         return;
     }
-
-    const sortedSleep = sleepData.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    sleepList.innerHTML = sortedSleep.map(entry => `
+    const sorted = sleepData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(entry => `
         <div class="grid grid-cols-3 gap-3 py-2 border-b border-gray-100 text-sm text-gray-600 relative group hover:bg-gray-50 hover:rounded-xl hover:-mx-2 hover:px-2 transition-all cursor-pointer" onclick="editEntry('sleep', ${entry.id})">
             <span class="text-xs">${formatDate(new Date(entry.date))}</span>
-            <span>${Math.round(entry.duration / 60)} hours</span>
+            <span>${Math.round(entry.duration / 60)}h</span>
             <span class="text-xs">${entry.startTime}-${entry.endTime}</span>
             <button class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/30 backdrop-blur-sm text-gray-700 w-4 h-4 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity border border-gray-200 hover:bg-white/40" onclick="event.stopPropagation(); deleteEntry('sleep', ${entry.id})" title="Delete">×</button>
         </div>
@@ -365,39 +349,33 @@ function updateSleepList() {
 }
 
 // Form handlers
-async function handleGrowthSubmit(e) {
+function handleGrowthSubmit(e) {
     e.preventDefault();
-    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
         date: document.getElementById('growthDate').value,
         weight: parseFloat(document.getElementById('growthWeight').value),
         height: parseFloat(document.getElementById('growthHeight').value) || null
     };
-
+    
     if (editingEntry) {
         const index = growthData.findIndex(item => item.id === editingEntry.id);
-        if (index !== -1) {
-            growthData[index] = data;
-        }
+        if (index !== -1) growthData[index] = data;
     } else {
         growthData.push(data);
     }
     
-    saveToStorage('growthData', growthData);
-    calculateStats();
+    saveGrowthData();
     updateUI();
     closeModal('growthModal');
-    showSuccess(editingEntry ? 'Growth entry updated!' : 'Growth entry added!');
+    showMessage(editingEntry ? 'Growth updated!' : 'Growth added!');
     document.getElementById('growthForm').reset();
     setDefaultDates();
     editingEntry = null;
-    editingType = null;
 }
 
-async function handleFeedingSubmit(e) {
+function handleFeedingSubmit(e) {
     e.preventDefault();
-    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
         date: document.getElementById('feedingDate').value,
@@ -405,60 +383,50 @@ async function handleFeedingSubmit(e) {
         amount: parseFloat(document.getElementById('feedingAmount').value),
         type: document.getElementById('feedingType').value
     };
-
+    
     if (editingEntry) {
         const index = feedingData.findIndex(item => item.id === editingEntry.id);
-        if (index !== -1) {
-            feedingData[index] = data;
-        }
+        if (index !== -1) feedingData[index] = data;
     } else {
         feedingData.push(data);
     }
     
-    saveToStorage('feedingData', feedingData);
-    calculateStats();
+    saveFeedingData();
     updateUI();
     closeModal('feedingModal');
-    showSuccess(editingEntry ? 'Feeding entry updated!' : 'Feeding entry added!');
+    showMessage(editingEntry ? 'Feeding updated!' : 'Feeding added!');
     document.getElementById('feedingForm').reset();
     setDefaultDates();
     editingEntry = null;
-    editingType = null;
 }
 
-async function handleDiaperSubmit(e) {
+function handleDiaperSubmit(e) {
     e.preventDefault();
-    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
         date: document.getElementById('diaperDate').value,
         time: document.getElementById('diaperTime').value,
         type: document.getElementById('diaperType').value
     };
-
+    
     if (editingEntry) {
         const index = diaperData.findIndex(item => item.id === editingEntry.id);
-        if (index !== -1) {
-            diaperData[index] = data;
-        }
+        if (index !== -1) diaperData[index] = data;
     } else {
         diaperData.push(data);
     }
     
-    saveToStorage('diaperData', diaperData);
-    calculateStats();
+    saveDiaperData();
     updateUI();
     closeModal('diaperModal');
-    showSuccess(editingEntry ? 'Diaper entry updated!' : 'Diaper entry added!');
+    showMessage(editingEntry ? 'Diaper updated!' : 'Diaper added!');
     document.getElementById('diaperForm').reset();
     setDefaultDates();
     editingEntry = null;
-    editingType = null;
 }
 
-async function handleSleepSubmit(e) {
+function handleSleepSubmit(e) {
     e.preventDefault();
-    
     const startTime = document.getElementById('sleepStart').value;
     const endTime = document.getElementById('sleepEnd').value;
     
@@ -466,10 +434,8 @@ async function handleSleepSubmit(e) {
     const end = new Date(`2000-01-01T${endTime}`);
     let duration = (end - start) / (1000 * 60);
     
-    if (duration <= 0) {
-        duration += 24 * 60;
-    }
-
+    if (duration <= 0) duration += 24 * 60;
+    
     const data = {
         id: editingEntry ? editingEntry.id : Date.now(),
         date: document.getElementById('sleepDate').value,
@@ -477,72 +443,36 @@ async function handleSleepSubmit(e) {
         endTime: endTime,
         duration: duration
     };
-
+    
     if (editingEntry) {
         const index = sleepData.findIndex(item => item.id === editingEntry.id);
-        if (index !== -1) {
-            sleepData[index] = data;
-        }
+        if (index !== -1) sleepData[index] = data;
     } else {
         sleepData.push(data);
     }
     
-    saveToStorage('sleepData', sleepData);
-    calculateStats();
+    saveSleepData();
     updateUI();
     closeModal('sleepModal');
-    showSuccess(editingEntry ? 'Sleep entry updated!' : 'Sleep entry added!');
+    showMessage(editingEntry ? 'Sleep updated!' : 'Sleep added!');
     document.getElementById('sleepForm').reset();
     setDefaultDates();
     editingEntry = null;
-    editingType = null;
 }
 
-async function handleBabyProfileSubmit(e) {
+function handleBabyProfileSubmit(e) {
     e.preventDefault();
-    
     babyData.name = document.getElementById('profileName').value;
-    babyData.birthDate = document.getElementById('profileBirthDate').value;
-    
-    saveToStorage('babyData', babyData);
+    babyData.birth_date = document.getElementById('profileBirthDate').value;
+    saveBabyData();
     updateBabyProfile();
     closeModal('babyProfileModal');
-    showSuccess('Baby profile updated!');
+    showMessage('Profile updated!');
 }
 
-function deleteEntry(type, id) {
-    if (!confirm('Are you sure you want to delete this entry?')) return;
-    
-    const numericId = parseInt(id);
-    
-    switch(type) {
-        case 'growth':
-            growthData = growthData.filter(item => item.id !== numericId);
-            saveToStorage('growthData', growthData);
-            break;
-        case 'feeding':
-            feedingData = feedingData.filter(item => item.id !== numericId);
-            saveToStorage('feedingData', feedingData);
-            break;
-        case 'diaper':
-            diaperData = diaperData.filter(item => item.id !== numericId);
-            saveToStorage('diaperData', diaperData);
-            break;
-        case 'sleep':
-            sleepData = sleepData.filter(item => item.id !== numericId);
-            saveToStorage('sleepData', sleepData);
-            break;
-    }
-    
-    calculateStats();
-    updateUI();
-    showSuccess('Entry deleted successfully!');
-}
-
-// UI functions
+// UI Functions
 function addGrowthEntry() {
     editingEntry = null;
-    editingType = null;
     document.querySelector('#growthModal h3').textContent = 'Add Growth Entry';
     document.getElementById('growthForm').reset();
     setDefaultDates();
@@ -551,7 +481,6 @@ function addGrowthEntry() {
 
 function addFeedingEntry() {
     editingEntry = null;
-    editingType = null;
     document.querySelector('#feedingModal h3').textContent = 'Add Feeding Entry';
     document.getElementById('feedingForm').reset();
     setDefaultDates();
@@ -560,7 +489,6 @@ function addFeedingEntry() {
 
 function addDiaperEntry() {
     editingEntry = null;
-    editingType = null;
     document.querySelector('#diaperModal h3').textContent = 'Add Diaper Change';
     document.getElementById('diaperForm').reset();
     setDefaultDates();
@@ -581,42 +509,31 @@ function toggleSleep() {
         };
         
         sleepData.unshift(sleepEntry);
-        saveToStorage('sleepData', sleepData);
+        saveSleepData();
         
         sleepSession = null;
         button.textContent = 'Start Sleep';
-        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 backdrop-blur-sm border border-gray-200';
+        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-purple-300 border border-gray-200';
         
-        calculateStats();
         updateUI();
-        showSuccess('Sleep session saved!');
+        showMessage('Sleep session saved!');
     } else {
         sleepSession = { startTime: new Date() };
         button.textContent = 'Stop Sleep';
-        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-red-400 backdrop-blur-sm border border-gray-200';
-        showSuccess('Sleep session started!');
+        button.className = 'text-white px-3 py-1 rounded-xl text-sm transition-all hover:opacity-80 bg-red-400 border border-gray-200';
+        showMessage('Sleep tracking started!');
     }
-}
-
-function startSleep() {
-    editingEntry = null;
-    editingType = null;
-    document.querySelector('#sleepModal h3').textContent = 'Add Sleep Entry';
-    document.getElementById('sleepForm').reset();
-    setDefaultDates();
-    document.getElementById('sleepModal').classList.remove('hidden');
 }
 
 function editBabyProfile() {
     document.getElementById('profileName').value = babyData.name || '';
-    document.getElementById('profileBirthDate').value = babyData.birthDate || '';
+    document.getElementById('profileBirthDate').value = babyData.birth_date || '';
     document.getElementById('babyProfileModal').classList.remove('hidden');
 }
 
 function editEntry(type, id) {
     const numericId = parseInt(id);
-    let entry;
-    let modalId;
+    let entry, modalId;
     
     switch(type) {
         case 'growth':
@@ -664,9 +581,36 @@ function editEntry(type, id) {
     
     if (entry) {
         editingEntry = entry;
-        editingType = type;
         document.getElementById(modalId).classList.remove('hidden');
     }
+}
+
+function deleteEntry(type, id) {
+    if (!confirm('Delete this entry?')) return;
+    
+    const numericId = parseInt(id);
+    
+    switch(type) {
+        case 'growth':
+            growthData = growthData.filter(item => item.id !== numericId);
+            saveGrowthData();
+            break;
+        case 'feeding':
+            feedingData = feedingData.filter(item => item.id !== numericId);
+            saveFeedingData();
+            break;
+        case 'diaper':
+            diaperData = diaperData.filter(item => item.id !== numericId);
+            saveDiaperData();
+            break;
+        case 'sleep':
+            sleepData = sleepData.filter(item => item.id !== numericId);
+            saveSleepData();
+            break;
+    }
+    
+    updateUI();
+    showMessage('Entry deleted!');
 }
 
 function changeBabyPhoto() {
@@ -680,7 +624,8 @@ function changeBabyPhoto() {
             reader.onload = function(e) {
                 document.getElementById('babyPhoto').src = e.target.result;
                 babyData.photo = e.target.result;
-                saveToStorage('babyData', babyData);
+                saveBabyData();
+                showMessage('Photo updated!');
             };
             reader.readAsDataURL(file);
         }
@@ -694,22 +639,8 @@ function closeModal(modalId) {
         growthChart = null;
     }
     
-    if (modalId !== 'growthChartModal' && modalId !== 'babyProfileModal') {
-        editingEntry = null;
-        editingType = null;
-        
-        if (modalId === 'growthModal') {
-            document.querySelector('#growthModal h3').textContent = 'Add Growth Entry';
-        } else if (modalId === 'feedingModal') {
-            document.querySelector('#feedingModal h3').textContent = 'Add Feeding Entry';
-        } else if (modalId === 'diaperModal') {
-            document.querySelector('#diaperModal h3').textContent = 'Add Diaper Change';
-        } else if (modalId === 'sleepModal') {
-            document.querySelector('#sleepModal h3').textContent = 'Add Sleep Entry';
-        }
-    }
-    
     document.getElementById(modalId).classList.add('hidden');
+    editingEntry = null;
 }
 
 function toggleSection(sectionName) {
@@ -727,55 +658,233 @@ function toggleSection(sectionName) {
     }
 }
 
-// Utility functions
 function formatDate(date) {
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+    const options = { day: 'numeric', month: 'short' };
     return date.toLocaleDateString('en-US', options);
 }
 
-function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function showSuccess(message) {
-    showMessage(message, 'success');
-}
-
-function showError(message) {
-    showMessage(message, 'error');
-}
-
-function showMessage(message, type) {
+function showMessage(message, type = 'success') {
     const existingMessages = document.querySelectorAll('.bg-green-100, .bg-red-100');
     existingMessages.forEach(msg => msg.remove());
 
     const messageDiv = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-    messageDiv.className = `${bgColor} p-3 rounded-lg my-3 text-center`;
+    messageDiv.className = `${bgColor} p-3 rounded-lg my-3 text-center fixed top-4 left-1/2 transform -translate-x-1/2 z-50 shadow-lg`;
     messageDiv.textContent = message;
     
-    const appContainer = document.querySelector('.max-w-sm');
-    appContainer.insertBefore(messageDiv, appContainer.firstChild);
+    document.body.appendChild(messageDiv);
     
     setTimeout(() => {
         messageDiv.remove();
-    }, 3000);
-}
-
-// Growth Chart (simplified for static version)
-function openGrowthChart() {
-    if (growthData.length === 0) {
-        showError('No growth data available to display chart');
-        return;
-    }
-    
-    alert('Chart feature coming soon! For now, view your data in the Growth section.');
+    }, 2000);
 }
 
 function updateSectionSubtitles() {
-    // Update based on current data
+    // Update growth subtitle
     if (growthData.length > 0) {
         const latest = growthData.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-        document.getElementById('growthSubtitle').textContent = `${latest.weight} kg`;
+        const growthSubtitle = document.getElementById('growthSubtitle');
+        if (growthSubtitle) {
+            growthSubtitle.textContent = `Latest: ${latest.weight}kg`;
+        }
+    }
+    
+    // Update feeding subtitle
+    const today = new Date().toDateString();
+    const todayFeedings = feedingData.filter(f => new Date(f.date).toDateString() === today);
+    const milkSubtitle = document.getElementById('milkSubtitle');
+    if (milkSubtitle) {
+        milkSubtitle.textContent = `Today: ${todayFeedings.length} feedings`;
+    }
+    
+    // Update diaper subtitle
+    const todayDiapers = diaperData.filter(d => new Date(d.date).toDateString() === today);
+    const peeCount = todayDiapers.filter(d => d.type === 'pee' || d.type === 'both').length;
+    const pooCount = todayDiapers.filter(d => d.type === 'poo' || d.type === 'both').length;
+    const diaperSubtitle = document.getElementById('diaperSubtitle');
+    if (diaperSubtitle) {
+        diaperSubtitle.textContent = `Today: ${peeCount} pee, ${pooCount} poo`;
+    }
+    
+    // Update sleep subtitle
+    const todaySleep = sleepData.filter(s => new Date(s.date).toDateString() === today);
+    const totalMinutes = todaySleep.reduce((sum, s) => sum + s.duration, 0);
+    const sleepSubtitle = document.getElementById('sleepSubtitle');
+    if (sleepSubtitle) {
+        sleepSubtitle.textContent = `Today: ${Math.round(totalMinutes / 60)}h sleep`;
+    }
+}
+
+// Growth Chart Functions
+function openGrowthChart() {
+    if (growthData.length === 0) {
+        showMessage('No growth data available to display chart', 'error');
+        return;
+    }
+    
+    document.getElementById('growthChartModal').classList.remove('hidden');
+    setTimeout(() => {
+        showWeightChart(); // Default to weight chart
+    }, 100);
+}
+
+function showWeightChart() {
+    currentChartType = 'weight';
+    updateChartButtons();
+    createGrowthChart();
+    updateChartStats();
+}
+
+function showHeightChart() {
+    currentChartType = 'height';
+    updateChartButtons();
+    createGrowthChart();
+    updateChartStats();
+}
+
+function showBothCharts() {
+    currentChartType = 'both';
+    updateChartButtons();
+    createGrowthChart();
+    updateChartStats();
+}
+
+function updateChartButtons() {
+    // Reset all buttons
+    const buttons = ['weightChartBtn', 'heightChartBtn', 'bothChartBtn'];
+    buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        btn.className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-all hover:bg-gray-300';
+    });
+    
+    // Highlight active button
+    const activeButton = document.getElementById(currentChartType === 'weight' ? 'weightChartBtn' : 
+                                               currentChartType === 'height' ? 'heightChartBtn' : 'bothChartBtn');
+    activeButton.className = 'px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium transition-all hover:bg-blue-600';
+}
+
+function createGrowthChart() {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    
+    if (growthChart) {
+        growthChart.destroy();
+    }
+    
+    const sortedData = growthData.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const labels = sortedData.map(item => formatDate(new Date(item.date)));
+    
+    const datasets = [];
+    
+    if (currentChartType === 'weight' || currentChartType === 'both') {
+        datasets.push({
+            label: 'Weight (kg)',
+            data: sortedData.map(item => item.weight),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            yAxisID: 'y'
+        });
+    }
+    
+    if (currentChartType === 'height' || currentChartType === 'both') {
+        const heightData = sortedData.filter(item => item.height).map(item => item.height);
+        if (heightData.length > 0) {
+            datasets.push({
+                label: 'Height (cm)',
+                data: sortedData.map(item => item.height),
+                borderColor: 'rgb(34, 197, 94)',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                yAxisID: currentChartType === 'both' ? 'y1' : 'y'
+            });
+        }
+    }
+    
+    const scales = {
+        x: {
+            display: true,
+            title: {
+                display: true,
+                text: 'Date'
+            }
+        },
+        y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: {
+                display: true,
+                text: currentChartType === 'weight' ? 'Weight (kg)' : 
+                      currentChartType === 'both' ? 'Weight (kg)' : 'Height (cm)'
+            }
+        }
+    };
+    
+    if (currentChartType === 'both') {
+        scales.y1 = {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+                display: true,
+                text: 'Height (cm)'
+            },
+            grid: {
+                drawOnChartArea: false,
+            },
+        };
+    }
+    
+    growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: scales,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Growth Chart - ${currentChartType.charAt(0).toUpperCase() + currentChartType.slice(1)}`
+                }
+            }
+        }
+    });
+}
+
+function updateChartStats() {
+    const weightData = growthData.filter(item => item.weight).map(item => item.weight);
+    const heightData = growthData.filter(item => item.height).map(item => item.height);
+    
+    // Weight stats
+    if (weightData.length > 0) {
+        const latestWeight = weightData[weightData.length - 1];
+        const firstWeight = weightData[0];
+        const avgWeight = (weightData.reduce((sum, w) => sum + w, 0) / weightData.length).toFixed(1);
+        const weightGain = (latestWeight - firstWeight).toFixed(1);
+        
+        document.getElementById('latestWeightStat').textContent = `${latestWeight}kg`;
+        document.getElementById('weightGainStat').textContent = `+${weightGain}kg`;
+        document.getElementById('avgWeightStat').textContent = `${avgWeight}kg`;
+    }
+    
+    // Height stats
+    if (heightData.length > 0) {
+        const latestHeight = heightData[heightData.length - 1];
+        const firstHeight = heightData[0];
+        const avgHeight = (heightData.reduce((sum, h) => sum + h, 0) / heightData.length).toFixed(1);
+        const heightGrowth = (latestHeight - firstHeight).toFixed(1);
+        
+        document.getElementById('latestHeightStat').textContent = `${latestHeight}cm`;
+        document.getElementById('heightGrowthStat').textContent = `+${heightGrowth}cm`;
+        document.getElementById('avgHeightStat').textContent = `${avgHeight}cm`;
+    } else {
+        document.getElementById('latestHeightStat').textContent = '--';
+        document.getElementById('heightGrowthStat').textContent = '--';
+        document.getElementById('avgHeightStat').textContent = '--';
     }
 } 
