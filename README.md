@@ -2,14 +2,18 @@
 
 A comprehensive baby tracking application built with HTML, CSS, JavaScript, and Node.js. This app helps parents monitor their baby's daily activities including growth, feeding, diaper changes, and sleep patterns.
 
-## 🌐 Live Demo
+## 🌐 Live Demo & Quick Deploy
 
-**🚀 Production URL**: [https://my-baby-production.up.railway.app](https://my-baby-production.up.railway.app)
+**🚀 Deploy to Railway (Free)**: 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/VXhiPQ?referralCode=MY_BABY)
 
-**📦 Alternative Deployments**:
-- Railway: Auto-deploys from GitHub main branch
-- Render: Available via render.yaml configuration
-- GitHub Actions: Automated testing and deployment
+**📦 Alternative Free Deployments**:
+- **Railway**: Click button above for instant deployment
+- **Render**: Available via render.yaml configuration  
+- **Vercel**: Clone repo and connect to Vercel
+- **Heroku**: Push to Heroku with Procfile
+
+**Production URL**: [https://kianghod-my-baby.up.railway.app](https://kianghod-my-baby.up.railway.app)
 
 ## 🎯 Multi-User System
 
@@ -66,6 +70,36 @@ Each user has completely separate data and can track their own baby independentl
    ```
 
 5. **Select User**: Choose from 5 available users (Kiang, Aoey, User 3-5) in the dropdown
+
+## 🚀 Deploy to Free Hosting
+
+### Option 1: Railway.app (Recommended - Free)
+1. **Click Deploy Button**: [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/VXhiPQ?referralCode=MY_BABY)
+2. **Connect GitHub**: Connect your GitHub account
+3. **Select Repository**: Choose `kianghod/my_baby`
+4. **Deploy**: Railway will automatically deploy your app
+5. **Get URL**: Your app will be live at `https://your-app.up.railway.app`
+
+### Option 2: Render.com (Free)
+1. **Sign up**: Create account at [render.com](https://render.com)
+2. **New Web Service**: Click "New" → "Web Service"
+3. **Connect GitHub**: Connect `https://github.com/kianghod/my_baby`
+4. **Configure**: 
+   - Build Command: `npm install`
+   - Start Command: `node server-db.js`
+5. **Deploy**: Click "Create Web Service"
+
+### Option 3: Vercel (Free)
+1. **Import**: Go to [vercel.com](https://vercel.com) → Import Project
+2. **GitHub**: Select `kianghod/my_baby` repository
+3. **Configure**: Vercel will auto-detect settings
+4. **Deploy**: Click "Deploy"
+
+### Option 4: Heroku (Free Tier Ended - Paid)
+1. **Install Heroku CLI**: Download from [heroku.com](https://heroku.com)
+2. **Login**: `heroku login`
+3. **Create App**: `heroku create your-baby-tracker`
+4. **Deploy**: `git push heroku main`
 
 ## Usage
 
